@@ -1,0 +1,118 @@
+"""
+User models for the AirAlert system.
+"""
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, Text, Enum, ForeignKey
+from sqlalchemy.orm import relationship
+from geoalchemy2 import Geometry
+from datetime import datetime
+import enum
+
+from .database import Base
+
+class User(Base):
+    """User profile for the AirAlert system."""
+    
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True)
+    email = Column(String, unique=True)
+    name = Column(String)
+    phone = Column(String)
+    
+    # User locations
+    home_location = Column(Geometry("POINT", srid=4326))  # Home location
+    work_location = Column(Geometry("POINT", srid=4326))  # Work location
+    
+    # User preferences
+    preferred_channel = Column(String, default="app")  # Preferred notification channel: 'app', 'email', 'sms'
+    language = Column(String, default="en")  # Preferred language for notifications
+    sensitivity_level = Column(Integer, default=0)  # 0 (normal), 1 (sensitive), 2 (highly sensitive)
+    is_active = Column(Boolean, default=True)  # Whether user receives alerts
+    
+    # Authentication related
+    hashed_password = Column(String)
+    is_verified = Column(Boolean, default=False)  # Whether email is verified
+    last_login = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.now)
+    
+    # Virtual properties for location access
+    @property
+    def home_latitude(self):
+        if self.home_location:
+            return self.home_location.y
+        return None
+        
+    @property
+    def home_longitude(self):
+        if self.home_location:
+            return self.home_location.x
+        return None
+        
+    @property
+    def work_latitude(self):
+        if self.work_location:
+            return self.work_location.y
+        return None
+        
+    @property
+    def work_longitude(self):
+        if self.work_location:
+            return self.work_location.x
+        return None
+    
+    # Relationships
+    notifications = relationship("Notification", back_populates="user")
+    subscriptions = relationship("AlertSubscription", back_populates="user")
+    
+    def __repr__(self):
+        return f"<User(id={self.id}, username='{self.username}', email='{self.email}')>"
+
+class AlertSubscription(Base):
+    """User subscriptions for specific alert types."""
+    
+    __tablename__ = "alert_subscriptions"
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    alert_type = Column(String, nullable=False)  # Type of alert to subscribe to
+    min_severity = Column(Integer, default=0)  # Minimum severity level to notify
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.now)
+    
+    # Relationship
+    user = relationship("User", back_populates="subscriptions")
+    
+    def __repr__(self):
+        return f"<AlertSubscription(user={self.user_id}, type='{self.alert_type}', min_severity={self.min_severity})>"
+
+class HealthProfile(Base):
+    """User health profile for personalized health recommendations."""
+    
+    __tablename__ = "health_profiles"
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # Health conditions that increase sensitivity to air pollution
+    has_asthma = Column(Boolean, default=False)
+    has_copd = Column(Boolean, default=False)
+    has_heart_disease = Column(Boolean, default=False)
+    has_diabetes = Column(Boolean, default=False)
+    has_pregnancy = Column(Boolean, default=False)
+    
+    # Age category affects sensitivity
+    age_category = Column(String)  # 'child', 'adult', 'elderly'
+    
+    # Additional notes
+    notes = Column(Text)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Relationship
+    user = relationship("User")
+    
+    def __repr__(self):
+        return f"<HealthProfile(user={self.user_id})>"

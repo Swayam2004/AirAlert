@@ -1,0 +1,94 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+airalert.db
+
+# Environment variables
+.env
+.venv
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Node/React
+node_modules/
+frontend/node_modules/
+frontend/build/
+frontend/.pnp
+frontend/.pnp.js
+frontend/coverage/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# GIS output files
+output/
+*.shp
+*.shx
+*.dbf
+*.prj
+*.geojson
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Alembic revision files
+# Comment this out if you want to include migration versions in Git
+# migrations/versions/
+
+# Docker
+.dockerignore
+
+# Misc
+.cache/
