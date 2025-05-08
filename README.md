@@ -78,7 +78,7 @@ airalert/
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/airalert.git
+   git clone https://github.com/Swayam2004/AirAlert.git
    cd airalert
    ```
 
