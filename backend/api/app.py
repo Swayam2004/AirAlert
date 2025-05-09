@@ -58,19 +58,19 @@ app.add_middleware(
 # Configuration
 config = {
     "openai_api_key": os.environ.get("OPENAI_API_KEY"),
-    "llm_model": "gpt-4o",
-    "alert_expiry_hours": 6,
+    "llm_model": os.environ.get("LLM_MODEL", "gpt-4o"),
+    "alert_expiry_hours": int(os.environ.get("ALERT_EXPIRY_HOURS", 6)),
     "default_radius_km": 25,
-    "gis_output_dir": "output",
+    "gis_output_dir": os.environ.get("GIS_OUTPUT_DIR", "output"),
     "message_templates": {
         "default_alert": "Air quality alert: {pollutant} levels are {severity} in your area. Current value: {current_value}. Take necessary precautions."
     }
 }
 
-# Secret key for JWT
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+# JWT settings from environment variables
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+ALGORITHM = os.environ.get("JWT_ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
