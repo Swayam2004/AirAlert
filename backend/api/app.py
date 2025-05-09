@@ -122,15 +122,14 @@ def read_users_me(token: str = Depends(oauth2_scheme)):
 
 # Initialize database
 @app.on_event("startup")
-async def startup_db_client():
+def startup_db_client():  # Changed from async to sync
     # Create all tables if they don't exist
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    Base.metadata.create_all(bind=engine)  # Changed to synchronous approach
     logger.info("Database initialized")
 
 @app.on_event("shutdown")
-async def shutdown_db_client():
-    await engine.dispose()
+def shutdown_db_client():  # Changed from async to sync
+    # No need to dispose engine in synchronous mode
     logger.info("Database connection closed")
 
 # Initialize Flask-Migrate with the app
@@ -138,14 +137,14 @@ init_app(app)
 
 # Health check route
 @app.get("/health")
-async def health_check():
+def health_check():  # Changed from async to sync
     """Simple health check endpoint to verify API is running."""
     return {"status": "ok", "timestamp": datetime.now().isoformat()}
 
 # Air quality data routes
 @app.get("/api/monitoring_stations")
-async def get_monitoring_stations(
-    db: AsyncSession = Depends(get_db),
+def get_monitoring_stations(  # Changed from async to sync
+    db = Depends(get_db),  # Removed AsyncSession type hint
     limit: int = 100,
     offset: int = 0
 ):
@@ -160,7 +159,7 @@ async def get_monitoring_stations(
     from sqlalchemy.orm import selectinload
     
     query = select(MonitoringStation).limit(limit).offset(offset)
-    result = await db.execute(query)
+    result = db.execute(query)  # Changed from await db.execute
     stations = result.scalars().all()
     
     return {
@@ -169,12 +168,12 @@ async def get_monitoring_stations(
     }
 
 @app.get("/api/air_quality")
-async def get_air_quality(
+def get_air_quality(  # Changed from async to sync
     station_id: Optional[int] = None,
     pollutant: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    db: AsyncSession = Depends(get_db)
+    db = Depends(get_db)  # Removed AsyncSession type hint
 ):
     """
     Get air quality data for specific stations, pollutants, and time ranges.
@@ -213,7 +212,7 @@ async def get_air_quality(
         query = query.where(and_(*filters))
     
     # Execute query
-    result = await db.execute(query.order_by(PollutantReading.timestamp.desc()).limit(1000))
+    result = db.execute(query.order_by(PollutantReading.timestamp.desc()).limit(1000))  # Changed from await db.execute
     readings = result.scalars().all()
     
     # If pollutant is specified, filter the results
@@ -536,10 +535,10 @@ async def check_alerts(
     }
 
 @app.get("/api/alerts")
-async def get_alerts(
+def get_alerts(  # Changed from async to sync
     active_only: bool = True,
     severity_min: int = 0,
-    db: AsyncSession = Depends(get_db)
+    db = Depends(get_db)  # Removed AsyncSession type hint
 ):
     """
     Get list of active alerts.
@@ -561,7 +560,7 @@ async def get_alerts(
     query = select(Alert).where(and_(*filters) if filters else True)
     
     # Execute query
-    result = await db.execute(query.order_by(Alert.created_at.desc()))
+    result = db.execute(query.order_by(Alert.created_at.desc()))  # Changed from await db.execute
     alerts = result.scalars().all()
     
     # Format response
@@ -585,10 +584,10 @@ async def get_alerts(
     }
 
 @app.get("/api/notifications/{user_id}")
-async def get_user_notifications(
+def get_user_notifications(  # Changed from async to sync
     user_id: int,
     unread_only: bool = False,
-    db: AsyncSession = Depends(get_db)
+    db = Depends(get_db)  # Removed AsyncSession type hint
 ):
     """
     Get notifications for a specific user.
@@ -602,7 +601,7 @@ async def get_user_notifications(
     
     # Check if user exists
     user_query = select(User).where(User.id == user_id)
-    user_result = await db.execute(user_query)
+    user_result = db.execute(user_query)  # Changed from await db.execute
     user = user_result.scalar_one_or_none()
     
     if not user:
@@ -620,7 +619,7 @@ async def get_user_notifications(
     ).where(and_(*filters))
     
     # Execute query
-    result = await db.execute(query.order_by(Notification.sent_at.desc()))
+    result = db.execute(query.order_by(Notification.sent_at.desc()))  # Changed from await db.execute
     notifications_with_alerts = result.all()
     
     # Format response
