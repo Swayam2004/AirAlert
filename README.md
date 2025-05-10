@@ -84,10 +84,16 @@ airalert/
 
 2. **Create and activate a virtual environment**
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+   Depending on your operating system and shell, use one of the following commands:
+
+      | Platform | Shell | Command to activate virtual environment |
+      |----------|-------|----------------------------------------|
+      | POSIX | bash/zsh | `$ source venv/bin/activate` |
+      | POSIX | fish | `$ source venv/bin/activate.fish` |
+      | POSIX | csh/tcsh | `$ source venv/bin/activate.csh` |
+      | POSIX | pwsh | `$ venv/bin/Activate.ps1` |
+      | Windows | cmd.exe | `C:\> venv\Scripts\activate.bat` |
+      | Windows | PowerShell | `PS C:\> venv\Scripts\Activate.ps1` |
 
 3. **Install Python dependencies**
 
