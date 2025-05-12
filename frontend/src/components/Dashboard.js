@@ -115,10 +115,10 @@ function Dashboard() {
 				<div className="stats-container">
 					{airQuality ? (
 						<>
-							<StatCard title="Current AQI" value={airQuality.aqi || "N/A"} unit="" icon="🌬️" className={`aqi-${getAQILevel(airQuality.aqi)}`} />
-							<StatCard title="PM2.5" value={airQuality.pm25 || "N/A"} unit="μg/m³" icon="🔬" />
-							<StatCard title="Temperature" value={airQuality.temperature || "N/A"} unit="°C" icon="🌡️" />
-							<StatCard title="Humidity" value={airQuality.humidity || "N/A"} unit="%" icon="💧" />
+							<StatCard title="Current AQI" value={airQuality.aqi.toFixed(2) || "N/A"} unit="" icon="🌬️" className={`aqi-${getAQILevel(airQuality.aqi)}`} />
+							<StatCard title="PM2.5" value={airQuality.pm25.toFixed(2) || "N/A"} unit="μg/m³" icon="🔬" />
+							<StatCard title="Temperature" value={airQuality.temperature.toFixed(2) || "N/A"} unit="°C" icon="🌡️" />
+							<StatCard title="Humidity" value={airQuality.humidity.toFixed(2) || "N/A"} unit="%" icon="💧" />
 						</>
 					) : (
 						<p className="no-data">No recent air quality data available.</p>

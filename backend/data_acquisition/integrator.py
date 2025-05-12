@@ -11,9 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
+import random
 
 from .fetchers.base import DataFetcher
 from ..models.air_quality import MonitoringStation, PollutantReading, WeatherData
+from ..models.database import engine
 
 class DataIntegrator:
     """Integrates data from multiple sources into the database."""
@@ -133,7 +135,6 @@ class DataIntegrator:
                                 state=station.get('state'),
                                 country=station.get('country'),
                                 source=station.get('source'),
-                                elevation=station.get('elevation'),
                                 last_updated=datetime.now(),
                                 metadata=metadata
                             )
@@ -148,7 +149,6 @@ class DataIntegrator:
                             state=station.get('state'),
                             country=station.get('country'),
                             source=station.get('source'),
-                            elevation=station.get('elevation'),
                             last_updated=datetime.now(),
                             metadata=metadata
                         )
@@ -445,3 +445,61 @@ class DataIntegrator:
         population = row.get('TotalPopulation', 0)
         senior_population = row.get('SeniorPopulation', 0)
         return (senior_population / population) * 100 if population > 0 else 0
+
+async def populate_test_data():
+    """
+    Populate the database with test data for monitoring stations and air quality readings.
+    """
+    from sqlalchemy.orm import Session
+    from ..models.air_quality import MonitoringStation, PollutantReading
+
+    db = Session(engine)
+
+    try:
+        # Add test monitoring stations
+        stations = [
+            MonitoringStation(
+                station_code=f"station_{i}",
+                station_name=f"Test Station {i}",
+                location=f"POINT({random.uniform(-180, 180)} {random.uniform(-90, 90)})",
+                city=f"City {i}",
+                state=f"State {i}",
+                country="Test Country",
+                source="test",
+                metadata={"test": True}
+            )
+            for i in range(1, 6)
+        ]
+        db.add_all(stations)
+        db.commit()
+
+        # Add test air quality readings
+        readings = [
+            PollutantReading(
+                station_id=station.id,
+                timestamp=datetime.now(),
+                pm25=random.uniform(0, 500),
+                pm10=random.uniform(0, 500),
+                o3=random.uniform(0, 500),
+                no2=random.uniform(0, 500),
+                so2=random.uniform(0, 500),
+                co=random.uniform(0, 500),
+                aqi=random.uniform(0, 500),
+                temperature=random.uniform(-10, 50),
+                humidity=random.uniform(0, 100),
+                wind_speed=random.uniform(0, 20),
+                wind_direction=random.uniform(0, 360),
+                pressure=random.uniform(900, 1100)
+            )
+            for station in stations
+            for _ in range(10)  # 10 readings per station
+        ]
+        db.add_all(readings)
+        db.commit()
+
+        print("Test data populated successfully.")
+    except Exception as e:
+        print(f"Error populating test data: {e}")
+        db.rollback()
+    finally:
+        db.close()

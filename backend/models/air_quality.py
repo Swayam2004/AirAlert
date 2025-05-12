@@ -5,8 +5,12 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boo
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 from datetime import datetime
+import logging
+from geoalchemy2.shape import to_shape
 
 from .database import Base
+
+logger = logging.getLogger(__name__)
 
 class MonitoringStation(Base):
     """Air quality monitoring station."""
@@ -27,13 +31,25 @@ class MonitoringStation(Base):
     @property
     def latitude(self):
         if self.location:
-            return self.location.y
+            try:
+                shape = to_shape(self.location)  # Convert WKB to Shapely geometry
+                logger.info(f"Extracting latitude from location: {shape}")
+                return shape.y
+            except AttributeError as e:
+                logger.error(f"Error extracting latitude: {str(e)}")
+                return None
         return None
-        
+
     @property
     def longitude(self):
         if self.location:
-            return self.location.x
+            try:
+                shape = to_shape(self.location)  # Convert WKB to Shapely geometry
+                logger.info(f"Extracting longitude from location: {shape}")
+                return shape.x
+            except AttributeError as e:
+                logger.error(f"Error extracting longitude: {str(e)}")
+                return None
         return None
     
     # Relationships

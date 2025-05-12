@@ -32,10 +32,14 @@ from ..alerts.message_generator import LLMAlertGenerator
 
 from ..models.database import db
 
-# Set up logging
+# Update logging configuration to write logs to a file
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("airalert.log"),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger("airalert")
 
@@ -156,15 +160,27 @@ def get_monitoring_stations(  # Changed from async to sync
     - offset: Number of stations to skip for pagination
     """
     from sqlalchemy import select
-    from sqlalchemy.orm import selectinload
     
     query = select(MonitoringStation).limit(limit).offset(offset)
     result = db.execute(query)  # Changed from await db.execute
     stations = result.scalars().all()
-    
+
+    # Serialize response
+    serialized_stations = [
+        {
+            "id": station.id,
+            "name": station.station_name,
+            "latitude": station.latitude,
+            "longitude": station.longitude,
+            "location": f"POINT({station.longitude} {station.latitude})" if station.latitude and station.longitude else None,
+            "last_updated": station.last_updated.isoformat() if station.last_updated else None,
+        }
+        for station in stations
+    ]
+
     return {
-        "count": len(stations),
-        "stations": stations
+        "count": len(serialized_stations),
+        "stations": serialized_stations
     }
 
 @app.get("/api/air_quality")
@@ -519,17 +535,20 @@ async def check_threshold_exceedances_task(pollutant: str):
 @app.post("/api/check_alerts")
 async def check_alerts(
     background_tasks: BackgroundTasks,
-    pollutant: str = Query(..., description="Pollutant to check (pm25, pm10, o3, no2, so2, co, aqi)")
+    pollutant: str = Query(None, description="Pollutant to check (pm25, pm10, o3, no2, so2, co, aqi)")
 ):
     """
     Trigger a background task to check for threshold exceedances and create alerts.
     """
     valid_pollutants = ['pm25', 'pm10', 'o3', 'no2', 'so2', 'co', 'aqi']
-    if pollutant not in valid_pollutants:
+    if pollutant and pollutant not in valid_pollutants:
         raise HTTPException(status_code=400, detail=f"Invalid pollutant. Must be one of: {', '.join(valid_pollutants)}")
-    
+
+    if not pollutant:
+        pollutant = 'pm25'  # Default to PM2.5 if no pollutant is specified
+
     background_tasks.add_task(check_threshold_exceedances_task, pollutant)
-    
+
     return {
         "message": f"Alert check for {pollutant} started"
     }
@@ -651,3 +670,91 @@ async def get_interactive_map():
     """Serve an interactive map showing air quality data."""
     # Example: Use a library like Folium or Mapbox to generate the map
     return {"message": "Interactive map endpoint under construction."}
+
+@app.get("/api/get_monitoring_stations")
+def get_monitoring_stations():
+    """
+    Retrieve a list of monitoring stations.
+    """
+    from sqlalchemy.orm import Session
+    db = Session(engine)
+    try:
+        logger.info("Fetching monitoring stations from the database.")
+        stations = db.query(MonitoringStation).all()
+        logger.info(f"Query executed successfully. Retrieved {len(stations)} stations.")
+        serialized_stations = []
+        for station in stations:
+            try:
+                logger.info(f"Serializing station: {station}")
+                serialized_stations.append({
+                    "id": station.id,
+                    "station_code": station.station_code,
+                    "station_name": station.station_name,
+                    "latitude": station.latitude,
+                    "longitude": station.longitude,
+                    "city": station.city,
+                    "state": station.state,
+                    "country": station.country,
+                    "source": station.source,
+                    "last_updated": station.last_updated.isoformat() if station.last_updated else None
+                })
+            except Exception as e:
+                logger.error(f"Error serializing station {station.id}: {str(e)}", exc_info=True)
+        logger.info(f"Serialization completed. Returning {len(serialized_stations)} stations.")
+        return {"stations": serialized_stations}
+    except Exception as e:
+        logger.error(f"Error fetching monitoring stations: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to fetch monitoring stations")
+    finally:
+        db.close()
+
+@app.get("/api/get_air_quality")
+def get_air_quality(station_id: int, start_time: str, end_time: str):
+    """
+    Retrieve air quality data for a specific station and time range.
+    """
+    from sqlalchemy.orm import Session
+    from datetime import datetime
+    db = Session(engine)
+    try:
+        logger.info(f"Fetching air quality data for station_id={station_id}, start_time={start_time}, end_time={end_time}.")
+        try:
+            start = datetime.fromisoformat(start_time)
+            end = datetime.fromisoformat(end_time)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format. Use ISO format (YYYY-MM-DDTHH:MM:SS)")
+
+        readings = db.query(PollutantReading).filter(
+            PollutantReading.station_id == station_id,
+            PollutantReading.timestamp >= start,
+            PollutantReading.timestamp <= end
+        ).all()
+        logger.info(f"Fetched {len(readings)} air quality readings.")
+
+        serialized_readings = [
+            {
+                "id": reading.id,
+                "station_id": reading.station_id,
+                "timestamp": reading.timestamp.isoformat(),
+                "pm25": reading.pm25,
+                "pm10": reading.pm10,
+                "o3": reading.o3,
+                "no2": reading.no2,
+                "so2": reading.so2,
+                "co": reading.co,
+                "aqi": reading.aqi,
+                "temperature": reading.temperature,
+                "humidity": reading.humidity,
+                "wind_speed": reading.wind_speed,
+                "wind_direction": reading.wind_direction,
+                "pressure": reading.pressure
+            }
+            for reading in readings
+        ]
+
+        return {"readings": serialized_readings}
+    except Exception as e:
+        logger.error(f"Error fetching air quality data: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch air quality data")
+    finally:
+        db.close()

@@ -44,7 +44,7 @@ function MonitoringStations() {
 									<div>
 										<h3>{station.name}</h3>
 										<p>ID: {station.id}</p>
-										<p>Location: {station.location}</p>
+										<p>Location: {station.location || "N/A"}</p>
 										{station.last_reading && (
 											<div className="last-reading">
 												<p>
