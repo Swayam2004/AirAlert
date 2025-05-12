@@ -31,6 +31,7 @@ from ..alerts.trigger import AlertTrigger
 from ..alerts.message_generator import LLMAlertGenerator
 
 from ..models.database import db
+from sqlalchemy import func
 
 # Update logging configuration to write logs to a file
 logging.basicConfig(
@@ -184,12 +185,12 @@ def get_monitoring_stations(  # Changed from async to sync
     }
 
 @app.get("/api/air_quality")
-def get_air_quality(  # Changed from async to sync
+def get_air_quality(
     station_id: Optional[int] = None,
     pollutant: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    db = Depends(get_db)  # Removed AsyncSession type hint
+    db = Depends(get_db)
 ):
     """
     Get air quality data for specific stations, pollutants, and time ranges.
@@ -202,6 +203,8 @@ def get_air_quality(  # Changed from async to sync
     """
     from sqlalchemy import select, and_
     
+    logger.info(f"API request: /api/air_quality with params station_id={station_id}, pollutant={pollutant}, start_date={start_date}, end_date={end_date}")
+    
     # Build query
     query = select(PollutantReading)
     
@@ -209,32 +212,88 @@ def get_air_quality(  # Changed from async to sync
     filters = []
     if station_id is not None:
         filters.append(PollutantReading.station_id == station_id)
+        logger.info(f"Filtering by station_id: {station_id}")
         
     if start_date is not None:
         try:
-            start_dt = datetime.fromisoformat(start_date)
+            # Handle UTC timezone indicator 'Z'
+            clean_start_date = start_date
+            if clean_start_date.endswith('Z'):
+                clean_start_date = clean_start_date[:-1]  # Remove the 'Z'
+                logger.info(f"Removed UTC indicator 'Z' from start_date: {clean_start_date}")
+                
+            # Try multiple date formats
+            formats = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"]
+            
+            start_dt = None
+            for fmt in formats:
+                try:
+                    start_dt = datetime.strptime(clean_start_date, fmt)
+                    logger.info(f"Successfully parsed start_date using format: {fmt}")
+                    break
+                except ValueError:
+                    continue
+                    
+            if not start_dt:
+                raise ValueError(f"Could not parse date format for: {clean_start_date}")
+                
             filters.append(PollutantReading.timestamp >= start_dt)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid start_date format")
+            logger.info(f"Filtering by start_date: {start_dt}")
+        except ValueError as e:
+            logger.error(f"Error parsing start_date: {str(e)}")
+            raise HTTPException(status_code=400, detail="Invalid start_date format. Use ISO format (YYYY-MM-DDTHH:MM:SS) or YYYY-MM-DD")
             
     if end_date is not None:
         try:
-            end_dt = datetime.fromisoformat(end_date)
+            # Handle UTC timezone indicator 'Z'
+            clean_end_date = end_date
+            if clean_end_date.endswith('Z'):
+                clean_end_date = clean_end_date[:-1]  # Remove the 'Z'
+                logger.info(f"Removed UTC indicator 'Z' from end_date: {clean_end_date}")
+                
+            # Try multiple date formats
+            formats = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"]
+            
+            end_dt = None
+            for fmt in formats:
+                try:
+                    end_dt = datetime.strptime(clean_end_date, fmt)
+                    logger.info(f"Successfully parsed end_date using format: {fmt}")
+                    break
+                except ValueError:
+                    continue
+                    
+            if not end_dt:
+                raise ValueError(f"Could not parse date format for: {clean_end_date}")
+                
             filters.append(PollutantReading.timestamp <= end_dt)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid end_date format")
+            logger.info(f"Filtering by end_date: {end_dt}")
+        except ValueError as e:
+            logger.error(f"Error parsing end_date: {str(e)}")
+            raise HTTPException(status_code=400, detail="Invalid end_date format. Use ISO format (YYYY-MM-DDTHH:MM:SS) or YYYY-MM-DD")
     
     if filters:
         query = query.where(and_(*filters))
     
+    # Log the query - Fixed version for newer SQLAlchemy
+    try:
+        from sqlalchemy.dialects import sqlite
+        # In newer versions of SQLAlchemy, Select objects are directly compilable
+        query_str = str(query.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True}))
+        logger.info(f"Executing query: {query_str}")
+    except Exception as e:
+        logger.warning(f"Could not compile query to string: {str(e)}")
+    
     # Execute query
-    result = db.execute(query.order_by(PollutantReading.timestamp.desc()).limit(1000))  # Changed from await db.execute
+    result = db.execute(query.order_by(PollutantReading.timestamp.desc()).limit(1000))
     readings = result.scalars().all()
+    logger.info(f"Query returned {len(readings)} readings")
     
     # If pollutant is specified, filter the results
     if pollutant is not None:
         valid_pollutants = ['pm25', 'pm10', 'o3', 'no2', 'so2', 'co', 'aqi']
         if pollutant not in valid_pollutants:
+            logger.warning(f"Invalid pollutant specified: {pollutant}")
             raise HTTPException(status_code=400, detail=f"Invalid pollutant. Must be one of: {', '.join(valid_pollutants)}")
             
         # Filter out null values for the specified pollutant
@@ -243,6 +302,8 @@ def get_air_quality(  # Changed from async to sync
             value = getattr(reading, pollutant)
             if value is not None:
                 filtered_readings.append(reading)
+        
+        logger.info(f"Filtered to {len(filtered_readings)} readings with non-null {pollutant} values")
         readings = filtered_readings
     
     # Format response
@@ -266,6 +327,7 @@ def get_air_quality(  # Changed from async to sync
             "pressure": reading.pressure
         })
     
+    logger.info(f"Returning {len(formatted_readings)} formatted readings")
     return {
         "count": len(formatted_readings),
         "readings": formatted_readings
@@ -539,19 +601,29 @@ async def check_alerts(
 ):
     """
     Trigger a background task to check for threshold exceedances and create alerts.
+    This endpoint supports checking for all supported pollutants.
     """
     valid_pollutants = ['pm25', 'pm10', 'o3', 'no2', 'so2', 'co', 'aqi']
+    
     if pollutant and pollutant not in valid_pollutants:
         raise HTTPException(status_code=400, detail=f"Invalid pollutant. Must be one of: {', '.join(valid_pollutants)}")
 
     if not pollutant:
-        pollutant = 'pm25'  # Default to PM2.5 if no pollutant is specified
-
-    background_tasks.add_task(check_threshold_exceedances_task, pollutant)
-
-    return {
-        "message": f"Alert check for {pollutant} started"
-    }
+        # If no specific pollutant is provided, check all pollutants
+        logger.info("No specific pollutant provided. Checking all pollutants.")
+        for p in valid_pollutants:
+            background_tasks.add_task(check_threshold_exceedances_task, p)
+        return {
+            "message": "Alert check started for all pollutants",
+            "pollutants": valid_pollutants
+        }
+    else:
+        # Check just the specified pollutant
+        logger.info(f"Checking alerts for pollutant: {pollutant}")
+        background_tasks.add_task(check_threshold_exceedances_task, pollutant)
+        return {
+            "message": f"Alert check for {pollutant} started"
+        }
 
 @app.get("/api/alerts")
 def get_alerts(  # Changed from async to sync
@@ -668,7 +740,6 @@ def get_user_notifications(  # Changed from async to sync
 @app.get("/api/map")
 async def get_interactive_map():
     """Serve an interactive map showing air quality data."""
-    # Example: Use a library like Folium or Mapbox to generate the map
     return {"message": "Interactive map endpoint under construction."}
 
 @app.get("/api/get_monitoring_stations")
@@ -719,17 +790,74 @@ def get_air_quality(station_id: int, start_time: str, end_time: str):
     try:
         logger.info(f"Fetching air quality data for station_id={station_id}, start_time={start_time}, end_time={end_time}.")
         try:
-            start = datetime.fromisoformat(start_time)
-            end = datetime.fromisoformat(end_time)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid date format. Use ISO format (YYYY-MM-DDTHH:MM:SS)")
+            # More flexible date parsing - try multiple formats if needed
+            formats = ["%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"]
+            
+            start = None
+            for fmt in formats:
+                try:
+                    start = datetime.strptime(start_time, fmt)
+                    break
+                except ValueError:
+                    continue
+            
+            end = None
+            for fmt in formats:
+                try:
+                    end = datetime.strptime(end_time, fmt)
+                    break
+                except ValueError:
+                    continue
+            
+            if not start or not end:
+                raise ValueError("Could not parse date format")
+                
+            logger.info(f"Parsed date range: {start} to {end}")
+        except ValueError as e:
+            logger.error(f"Date parsing error: {str(e)}")
+            raise HTTPException(status_code=400, detail="Invalid date format. Try ISO format (YYYY-MM-DDTHH:MM:SS) or YYYY-MM-DD")
 
-        readings = db.query(PollutantReading).filter(
+        # Check if station exists
+        station = db.query(MonitoringStation).filter(MonitoringStation.id == station_id).first()
+        if not station:
+            logger.warning(f"Station with ID {station_id} not found")
+            raise HTTPException(status_code=404, detail=f"Station with ID {station_id} not found")
+        
+        logger.info(f"Found station: {station.station_name} (ID: {station_id})")
+        
+        # Build query with logging
+        query = db.query(PollutantReading).filter(
             PollutantReading.station_id == station_id,
             PollutantReading.timestamp >= start,
             PollutantReading.timestamp <= end
-        ).all()
+        )
+        
+        # Log the SQL query
+        from sqlalchemy.dialects import sqlite
+        query_str = str(query.statement.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True}))
+        logger.info(f"Executing query: {query_str}")
+        
+        readings = query.all()
         logger.info(f"Fetched {len(readings)} air quality readings.")
+        
+        if len(readings) == 0:
+            # Debug: Check if there are any readings at all for this station
+            total_readings = db.query(PollutantReading).filter(PollutantReading.station_id == station_id).count()
+            logger.info(f"Total readings for station {station_id}: {total_readings}")
+            
+            if total_readings > 0:
+                # Debug: Get the earliest and latest timestamp
+                earliest = db.query(func.min(PollutantReading.timestamp)).filter(
+                    PollutantReading.station_id == station_id
+                ).scalar()
+                latest = db.query(func.max(PollutantReading.timestamp)).filter(
+                    PollutantReading.station_id == station_id
+                ).scalar()
+                logger.info(f"Available data range for station {station_id}: {earliest} to {latest}")
+                logger.info(f"Query range: {start} to {end}")
+                
+                # Check if timestamps are of the same type
+                logger.info(f"Timestamp types - earliest: {type(earliest)}, query start: {type(start)}")
 
         serialized_readings = [
             {
@@ -754,7 +882,196 @@ def get_air_quality(station_id: int, start_time: str, end_time: str):
 
         return {"readings": serialized_readings}
     except Exception as e:
-        logger.error(f"Error fetching air quality data: {str(e)}")
+        logger.error(f"Error fetching air quality data: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch air quality data")
     finally:
         db.close()
+
+# Add route aliases for backward compatibility with frontend
+@app.get("/api/monitoring_stations")
+def get_monitoring_stations_compatible(limit: int = 100, offset: int = 0):
+    """
+    Route for monitoring stations to maintain compatibility with frontend.
+    """
+    logger.info(f"Frontend compatible monitoring stations endpoint called with limit={limit}, offset={offset}")
+    return get_monitoring_stations()
+
+@app.get("/api/air_quality")
+def get_air_quality_compatible(
+    station_id: Optional[int] = None,
+    pollutant: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    db = Depends(get_db)
+):
+    """
+    Route for air quality to maintain compatibility with frontend.
+    This ensures both old and new frontend code works properly.
+    """
+    logger.info(f"Frontend compatible air quality endpoint called with params: station_id={station_id}, pollutant={pollutant}, start_date={start_date}, end_date={end_date}")
+    
+    # Build query
+    from sqlalchemy import select, and_
+    
+    # Build query
+    query = select(PollutantReading)
+    
+    # Apply filters
+    filters = []
+    if station_id is not None:
+        filters.append(PollutantReading.station_id == station_id)
+        logger.info(f"Filtering by station_id: {station_id}")
+        
+    if start_date is not None:
+        try:
+            # Handle UTC timezone indicator 'Z'
+            if start_date.endswith('Z'):
+                start_date = start_date[:-1]  # Remove the 'Z'
+                logger.info(f"Removed UTC indicator 'Z' from start_date: {start_date}")
+                
+            # Try multiple date formats
+            formats = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"]
+            
+            start_dt = None
+            for fmt in formats:
+                try:
+                    start_dt = datetime.strptime(start_date, fmt)
+                    logger.info(f"Successfully parsed start_date using format: {fmt}")
+                    break
+                except ValueError:
+                    continue
+                    
+            if not start_dt:
+                raise ValueError(f"Could not parse date format for: {start_date}")
+                
+            filters.append(PollutantReading.timestamp >= start_dt)
+            logger.info(f"Filtering by start_date: {start_dt}")
+        except ValueError as e:
+            logger.error(f"Error parsing start_date: {str(e)}")
+            raise HTTPException(status_code=400, detail="Invalid start_date format. Use ISO format (YYYY-MM-DDTHH:MM:SS) or YYYY-MM-DD")
+            
+    if end_date is not None:
+        try:
+            # Handle UTC timezone indicator 'Z'
+            if end_date.endswith('Z'):
+                end_date = end_date[:-1]  # Remove the 'Z'
+                logger.info(f"Removed UTC indicator 'Z' from end_date: {end_date}")
+                
+            # Try multiple date formats
+            formats = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"]
+            
+            end_dt = None
+            for fmt in formats:
+                try:
+                    end_dt = datetime.strptime(end_date, fmt)
+                    logger.info(f"Successfully parsed end_date using format: {fmt}")
+                    break
+                except ValueError:
+                    continue
+                    
+            if not end_dt:
+                raise ValueError(f"Could not parse date format for: {end_date}")
+                
+            filters.append(PollutantReading.timestamp <= end_dt)
+            logger.info(f"Filtering by end_date: {end_dt}")
+        except ValueError as e:
+            logger.error(f"Error parsing end_date: {str(e)}")
+            raise HTTPException(status_code=400, detail="Invalid end_date format. Use ISO format (YYYY-MM-DDTHH:MM:SS) or YYYY-MM-DD")
+    
+    if filters:
+        query = query.where(and_(*filters))
+    
+    # Log the query
+    try:
+        from sqlalchemy.dialects import sqlite
+        # In newer versions of SQLAlchemy, Select objects are directly compilable
+        query_str = str(query.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True}))
+        logger.info(f"Executing query: {query_str}")
+    except Exception as e:
+        logger.warning(f"Could not compile query to string: {str(e)}")
+    
+    # Execute query
+    result = db.execute(query.order_by(PollutantReading.timestamp.desc()).limit(1000)) 
+    readings = result.scalars().all()
+    logger.info(f"Query returned {len(readings)} readings")
+    
+    # If pollutant is specified, filter the results
+    if pollutant is not None:
+        valid_pollutants = ['pm25', 'pm10', 'o3', 'no2', 'so2', 'co', 'aqi']
+        if pollutant not in valid_pollutants:
+            logger.warning(f"Invalid pollutant specified: {pollutant}")
+            raise HTTPException(status_code=400, detail=f"Invalid pollutant. Must be one of: {', '.join(valid_pollutants)}")
+            
+        # Filter out null values for the specified pollutant
+        filtered_readings = []
+        for reading in readings:
+            value = getattr(reading, pollutant)
+            if value is not None:
+                filtered_readings.append(reading)
+        
+        logger.info(f"Filtered to {len(filtered_readings)} readings with non-null {pollutant} values")
+        readings = filtered_readings
+    
+    # Format response
+    formatted_readings = []
+    for reading in readings:
+        formatted_readings.append({
+            "id": reading.id,
+            "station_id": reading.station_id,
+            "timestamp": reading.timestamp.isoformat(),
+            "pm25": reading.pm25,
+            "pm10": reading.pm10,
+            "o3": reading.o3,
+            "no2": reading.no2,
+            "so2": reading.so2,
+            "co": reading.co,
+            "aqi": reading.aqi,
+            "temperature": reading.temperature,
+            "humidity": reading.humidity,
+            "wind_speed": reading.wind_speed,
+            "wind_direction": reading.wind_direction,
+            "pressure": reading.pressure
+        })
+    
+    logger.info(f"Returning {len(formatted_readings)} formatted readings")
+    return {
+        "count": len(formatted_readings),
+        "readings": formatted_readings
+    }
+
+@app.post("/api/notifications/process")
+async def process_notifications(
+    background_tasks: BackgroundTasks,
+    alert_id: Optional[int] = None
+):
+    """
+    Process pending notifications. If alert_id is provided, only process
+    notifications for that specific alert.
+    """
+    from ..notifications.manager import NotificationManager
+
+    logger.info("Processing notifications endpoint called")
+    
+    async def process_notifications_task(alert_id=None):
+        async with AsyncSession(engine) as session:
+            manager = NotificationManager(session, config)
+            
+            if alert_id:
+                # Process notifications for specific alert
+                logger.info(f"Processing notifications for alert {alert_id}")
+                result = await manager.send_alert_notifications(alert_id)
+                logger.info(f"Notification processing complete: {result}")
+            else:
+                # Process all pending notifications
+                logger.info("Processing all pending notifications")
+                result = await manager.process_pending_notifications()
+                logger.info(f"Notification processing complete: {result}")
+                
+            return result
+    
+    background_tasks.add_task(process_notifications_task, alert_id)
+    
+    if alert_id:
+        return {"message": f"Notification processing started for alert {alert_id}"}
+    else:
+        return {"message": "Notification processing started for all pending notifications"}
