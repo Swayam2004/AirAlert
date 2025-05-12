@@ -32,6 +32,10 @@ AirAlert is an intelligent air quality monitoring and alert system that combines
 - **Leaflet/React-Leaflet**: Interactive maps
 - **Recharts**: Data visualization
 - **Axios**: HTTP client
+- **TypeScript**: For type-safe code
+- **Material-UI**: Component library for responsive design
+- **Redux Toolkit**: State management
+- **React Router**: Navigation management
 
 ### Data Storage
 
@@ -86,14 +90,14 @@ airalert/
 
    Depending on your operating system and shell, use one of the following commands:
 
-      | Platform | Shell | Command to activate virtual environment |
-      |----------|-------|----------------------------------------|
-      | POSIX | bash/zsh | `$ source venv/bin/activate` |
-      | POSIX | fish | `$ source venv/bin/activate.fish` |
-      | POSIX | csh/tcsh | `$ source venv/bin/activate.csh` |
-      | POSIX | pwsh | `$ venv/bin/Activate.ps1` |
-      | Windows | cmd.exe | `C:\> venv\Scripts\activate.bat` |
-      | Windows | PowerShell | `PS C:\> venv\Scripts\Activate.ps1` |
+   | Platform | Shell      | Command to activate virtual environment |
+   | -------- | ---------- | --------------------------------------- |
+   | POSIX    | bash/zsh   | `$ source venv/bin/activate`            |
+   | POSIX    | fish       | `$ source venv/bin/activate.fish`       |
+   | POSIX    | csh/tcsh   | `$ source venv/bin/activate.csh`        |
+   | POSIX    | pwsh       | `$ venv/bin/Activate.ps1`               |
+   | Windows  | cmd.exe    | `C:\> venv\Scripts\activate.bat`        |
+   | Windows  | PowerShell | `PS C:\> venv\Scripts\Activate.ps1`     |
 
 3. **Install Python dependencies**
 
@@ -257,8 +261,51 @@ AirAlert's alert system works as follows:
 
 Alert severity is determined based on established health guidelines for each pollutant.
 
+## Troubleshooting
+
+### Common Issues
+
+#### API Connection Problems
+
+```bash
+# Check if the API server is running
+curl http://localhost:8000/health
+
+# Verify environment variables
+cat .env | grep API
+```
+
+#### Database Migration Errors
+
+```bash
+# Reset migrations
+alembic revision --autogenerate -m "reset"
+alembic upgrade head
+```
+
+#### Frontend Build Issues
+
+```bash
+# Clean npm cache
+npm cache clean --force
+npm install --legacy-peer-deps
+```
+
+## Security
+
+AirAlert implements several security measures:
+
+- JWT-based authentication
+- Password hashing with bcrypt
+- Input validation and sanitization
+- HTTPS-only API communications
+- Rate limiting for API endpoints
+
 ## Acknowledgements
 
 - [OpenAQ](https://openaq.org/) for air quality data
 - [European Space Agency](https://www.esa.int/) for Sentinel-5P data
 - Research from VayuBuddy and similar air quality monitoring systems
+
+
+<div align="center">Made with ❤️ by the <b>AirAlert Team</b></div>

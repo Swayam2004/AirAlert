@@ -40,12 +40,21 @@ apscheduler>=3.10.0           # For scheduling data collection tasks
 
 # Email handling
 aiosmtplib>=2.0.1
+jinja2>=3.0.0                 # For email templating
 
 # Logging
 colorlog>=6.7.0
+logging-colorizer>=0.1.0      # For enhanced log formatting
 
 # Password Hashing
-passlib>=1.7.4  # For secure password hashing
+passlib>=1.7.4                # For secure password hashing
+bcrypt>=4.0.1                 # For password hashing algorithm
 
 # JWT Authentication
-python-jose>=3.3.0  # For handling JSON Web Tokens
+python-jose>=3.3.0            # For handling JSON Web Tokens
+cryptography>=42.0.0          # Required by python-jose for JWT operations
+
+# Testing
+pytest>=7.4.0                 # Testing framework
+pytest-asyncio>=0.21.0        # For testing async code
+httpx>=0.24.1                 # For async HTTP testing
