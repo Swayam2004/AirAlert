@@ -5,6 +5,7 @@ Defines the interface for all notification delivery channels.
 from abc import ABC, abstractmethod
 import logging
 from typing import Dict, Any, Optional, List
+from datetime import datetime
 
 from ..models.alerts import Notification
 
@@ -73,10 +74,24 @@ class SMSNotificationSender(NotificationSender):
 
             # Simulate sending SMS
             self.logger.info(f"Sending SMS to {phone_number}: {notification.message}")
+            
+            # Update notification status
+            notification.delivery_channel = "sms"
+            notification.sent_at = datetime.now()
+            
             return True
         except Exception as e:
             self.logger.error(f"Error sending SMS notification: {str(e)}")
             return False
+            
+    async def send_batch(self, notifications: List[Notification]) -> Dict[int, bool]:
+        """Send a batch of SMS notifications."""
+        results = {}
+        for notification in notifications:
+            success = await self.send_notification(notification)
+            results[notification.id] = success
+        return results
+
 
 class WebNotificationSender(NotificationSender):
     """Sends notifications via web push."""
@@ -85,7 +100,52 @@ class WebNotificationSender(NotificationSender):
         try:
             # Simulate sending web notification
             self.logger.info(f"Sending web notification to user {notification.user_id}: {notification.message}")
+            
+            # Update notification status
+            notification.delivery_channel = "web"
+            notification.sent_at = datetime.now()
+            
             return True
         except Exception as e:
             self.logger.error(f"Error sending web notification: {str(e)}")
             return False
+            
+    async def send_batch(self, notifications: List[Notification]) -> Dict[int, bool]:
+        """Send a batch of web notifications."""
+        results = {}
+        for notification in notifications:
+            success = await self.send_notification(notification)
+            results[notification.id] = success
+        return results
+
+
+class EmailNotificationSender(NotificationSender):
+    """Sends notifications via email."""
+
+    async def send_notification(self, notification: Notification) -> bool:
+        try:
+            # Get user email
+            email = notification.user.email
+            if not email:
+                self.logger.error(f"User {notification.user_id} has no email address")
+                return False
+                
+            # Simulate sending email
+            self.logger.info(f"Sending email to {email}: {notification.message}")
+            
+            # Update notification status
+            notification.delivery_channel = "email"
+            notification.sent_at = datetime.now()
+            
+            return True
+        except Exception as e:
+            self.logger.error(f"Error sending email notification: {str(e)}")
+            return False
+            
+    async def send_batch(self, notifications: List[Notification]) -> Dict[int, bool]:
+        """Send a batch of email notifications."""
+        results = {}
+        for notification in notifications:
+            success = await self.send_notification(notification)
+            results[notification.id] = success
+        return results
