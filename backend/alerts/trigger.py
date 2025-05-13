@@ -99,7 +99,7 @@ class AlertTrigger:
         """
         try:
             # Get current max value in the area
-            current_value = await self._get_current_max_value(pollutant, affected_area)
+            current_value, center_coordinates = await self._get_current_max_value(pollutant, affected_area)
             
             # Create alert with 6-hour expiration by default
             expires_at = datetime.now() + timedelta(hours=self.config.get('alert_expiry_hours', 6))
@@ -111,14 +111,36 @@ class AlertTrigger:
                 'default_alert'
             )
             
-            # Convert geometry to WKT format for database storage
-            affected_area_wkt = affected_area.wkt
+            # Ensure we have a valid affected area WKT
+            try:
+                affected_area_wkt = affected_area.wkt
+            except (AttributeError, TypeError) as e:
+                self.logger.warning(f"Invalid geometry for affected area: {e}. Using fallback.")
+                # Use a circular area around the center coordinates as fallback
+                if center_coordinates:
+                    from shapely.geometry import Point
+                    radius_degrees = 0.05  # Approximately 5 km at equator
+                    center_point = Point(center_coordinates)
+                    affected_area_wkt = center_point.buffer(radius_degrees).wkt
+                else:
+                    self.logger.error("Cannot create alert without coordinates")
+                    return None
+            
+            # Add center coordinates for easier frontend rendering
+            center_lat, center_lon = center_coordinates if center_coordinates else (None, None)
+            
+            # Calculate impact radius based on severity (for UI visualization)
+            # Higher severity = larger radius for visual impact
+            impact_radius_km = severity_level * 2.5  # 2.5km per severity level
             
             # Create alert record
             alert = Alert(
                 alert_type='pollution',
                 severity_level=severity_level,
-                affected_area=affected_area_wkt,  
+                affected_area=affected_area_wkt,
+                center_latitude=center_lat,
+                center_longitude=center_lon,
+                impact_radius_km=impact_radius_km,  
                 pollutant=pollutant,
                 threshold_value=threshold_value,
                 current_value=current_value,
@@ -133,7 +155,7 @@ class AlertTrigger:
             
             self.logger.info(
                 f"Created alert {alert.id}: {pollutant} {level_name} "
-                f"(severity {severity_level})"
+                f"(severity {severity_level}, coords: {center_lat}, {center_lon})"
             )
             
             return alert.id
@@ -142,35 +164,76 @@ class AlertTrigger:
             self.logger.error(f"Error creating alert: {str(e)}")
             return None
     
-    async def _get_current_max_value(self, pollutant: str, affected_area: Any) -> float:
+    async def _get_current_max_value(self, pollutant: str, affected_area: Any) -> Tuple[float, Optional[Tuple[float, float]]]:
         """
-        Get current maximum value of pollutant in affected area.
+        Get current maximum value of pollutant in affected area and center coordinates.
         
         Args:
             pollutant: Name of pollutant
             affected_area: Shapely geometry of affected area
             
         Returns:
-            Maximum pollutant value
+            Tuple of (maximum pollutant value, (latitude, longitude) coordinates)
         """
         try:
+            # Get center coordinates from geometry if possible
+            center_coordinates = None
+            try:
+                if hasattr(affected_area, 'centroid'):
+                    centroid = affected_area.centroid
+                    center_coordinates = (centroid.y, centroid.x)  # (latitude, longitude)
+                    self.logger.info(f"Calculated centroid: {center_coordinates}")
+            except Exception as e:
+                self.logger.warning(f"Could not calculate centroid: {str(e)}")
+
             # Convert pollutant name to column name
             pollutant_column = pollutant.lower()
             
-            # Check if we have readings for this pollutant
             # Find all stations in the affected area with recent readings
             one_hour_ago = datetime.now() - timedelta(hours=1)
             
             # Construct query to find stations in the affected area
-            stations_stmt = select(MonitoringStation.id).where(
-                ST_Intersects(MonitoringStation.location, affected_area.wkt)
-            )
-            stations_result = await self.db_session.execute(stations_stmt)
-            station_ids = [row[0] for row in stations_result]
+            stations_query = None
+            try:
+                # Try using the WKT representation if available
+                if hasattr(affected_area, 'wkt'):
+                    stations_stmt = select(MonitoringStation).where(
+                        ST_Intersects(MonitoringStation.location, affected_area.wkt)
+                    )
+                    stations_result = await self.db_session.execute(stations_stmt)
+                    stations = stations_result.scalars().all()
+                else:
+                    # Fallback: get all stations
+                    stations_stmt = select(MonitoringStation)
+                    stations_result = await self.db_session.execute(stations_stmt)
+                    stations = stations_result.scalars().all()
+                    self.logger.warning("No valid geometry for spatial query, fetching all stations")
+            except Exception as e:
+                # Fallback: get all stations
+                stations_stmt = select(MonitoringStation)
+                stations_result = await self.db_session.execute(stations_stmt)
+                stations = stations_result.scalars().all()
+                self.logger.warning(f"Error in spatial query: {str(e)}, fetching all stations")
+            
+            if not stations:
+                self.logger.warning(f"No stations found for the area")
+                return 0.0, center_coordinates
+            
+            # If we don't have center coordinates yet, use the average of station coordinates
+            if not center_coordinates and stations:
+                valid_coords = [(s.latitude, s.longitude) for s in stations if s.latitude and s.longitude]
+                if valid_coords:
+                    avg_lat = sum(lat for lat, _ in valid_coords) / len(valid_coords)
+                    avg_lon = sum(lon for _, lon in valid_coords) / len(valid_coords)
+                    center_coordinates = (avg_lat, avg_lon)
+                    self.logger.info(f"Using average station coordinates: {center_coordinates}")
+            
+            # Get station IDs
+            station_ids = [s.id for s in stations]
             
             if not station_ids:
-                self.logger.warning(f"No stations found in affected area")
-                return 0.0
+                self.logger.warning("No station IDs available")
+                return 0.0, center_coordinates
             
             # Find recent readings from these stations
             readings_stmt = select(PollutantReading).where(
@@ -182,23 +245,39 @@ class AlertTrigger:
             readings_result = await self.db_session.execute(readings_stmt)
             readings = readings_result.scalars().all()
             
-            # Extract values for the specific pollutant
-            values = []
+            # Extract values and coordinates for the specific pollutant
+            max_value = 0.0
+            max_value_station_id = None
+            
             for reading in readings:
                 value = getattr(reading, pollutant_column, None)
-                if value is not None:
-                    values.append(value)
+                if value is not None and value > max_value:
+                    max_value = value
+                    max_value_station_id = reading.station_id
             
-            # Return max value or 0 if no values
-            if values:
-                return max(values)
+            # If we found a maximum value, get its coordinates
+            if max_value_station_id and not center_coordinates:
+                max_station_stmt = select(MonitoringStation).where(
+                    MonitoringStation.id == max_value_station_id
+                )
+                max_station_result = await self.db_session.execute(max_station_stmt)
+                max_station = max_station_result.scalar_one_or_none()
+                
+                if max_station and max_station.latitude and max_station.longitude:
+                    center_coordinates = (max_station.latitude, max_station.longitude)
+                    self.logger.info(f"Using coordinates of max value station: {center_coordinates}")
+            
+            # Return max value and center coordinates
+            if max_value > 0:
+                self.logger.info(f"Maximum {pollutant} value in area: {max_value}")
+                return max_value, center_coordinates
             else:
-                self.logger.warning(f"No {pollutant} readings found in affected area")
-                return 0.0
+                self.logger.warning(f"No {pollutant} readings found in area")
+                return 0.0, center_coordinates
                 
         except Exception as e:
             self.logger.error(f"Error getting current pollutant value: {str(e)}")
-            return 0.0
+            return 0.0, None
     
     async def _notify_affected_users(self, alert_id: int) -> int:
         """

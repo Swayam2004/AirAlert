@@ -33,10 +33,10 @@ class MonitoringStation(Base):
         if self.location:
             try:
                 shape = to_shape(self.location)  # Convert WKB to Shapely geometry
-                logger.info(f"Extracting latitude from location: {shape}")
+                # logger.info(f"Extracting latitude from location: {shape}")
                 return shape.y
             except AttributeError as e:
-                logger.error(f"Error extracting latitude: {str(e)}")
+                # logger.error(f"Error extracting latitude: {str(e)}")
                 return None
         return None
 
@@ -122,6 +122,7 @@ class WeatherData(Base):
     __tablename__ = "weather_data"
 
     id = Column(Integer, primary_key=True)
+    station_id = Column(Integer, ForeignKey("monitoring_stations.id"), nullable=True)
     timestamp = Column(DateTime, nullable=False)
     temperature = Column(Float, nullable=True)
     humidity = Column(Float, nullable=True)
@@ -130,5 +131,8 @@ class WeatherData(Base):
     pressure = Column(Float, nullable=True)
     location = Column(Geometry("POINT", srid=4326), nullable=False)
 
+    # Relationship
+    station = relationship("MonitoringStation")
+
     def __repr__(self):
-        return f"<WeatherData(id={self.id}, timestamp={self.timestamp}, location={self.location})>"
+        return f"<WeatherData(id={self.id}, timestamp={self.timestamp}, station_id={self.station_id})>"
