@@ -451,7 +451,8 @@ async def populate_test_data():
     Populate the database with test data for monitoring stations and air quality readings.
     """
     from sqlalchemy.orm import Session
-    from ..models.air_quality import MonitoringStation, PollutantReading
+    from ..models.air_quality import MonitoringStation, PollutantReading, WeatherData
+    from geoalchemy2.elements import WKTElement
 
     db = Session(engine)
 
@@ -473,28 +474,47 @@ async def populate_test_data():
         db.add_all(stations)
         db.commit()
 
-        # Add test air quality readings
-        readings = [
-            PollutantReading(
-                station_id=station.id,
-                timestamp=datetime.now(),
-                pm25=random.uniform(0, 500),
-                pm10=random.uniform(0, 500),
-                o3=random.uniform(0, 500),
-                no2=random.uniform(0, 500),
-                so2=random.uniform(0, 500),
-                co=random.uniform(0, 500),
-                aqi=random.uniform(0, 500),
-                temperature=random.uniform(-10, 50),
-                humidity=random.uniform(0, 100),
-                wind_speed=random.uniform(0, 20),
-                wind_direction=random.uniform(0, 360),
-                pressure=random.uniform(900, 1100)
-            )
-            for station in stations
-            for _ in range(10)  # 10 readings per station
-        ]
-        db.add_all(readings)
+        # Add test air quality readings and weather data
+        current_timestamp = datetime.now()
+        
+        for station in stations:
+            for i in range(10):  # 10 readings per station
+                # Create pollutant reading
+                pollutant_reading = PollutantReading(
+                    station_id=station.id,
+                    timestamp=current_timestamp,
+                    pm25=random.uniform(0, 500),
+                    pm10=random.uniform(0, 500),
+                    o3=random.uniform(0, 500),
+                    no2=random.uniform(0, 500),
+                    so2=random.uniform(0, 500),
+                    co=random.uniform(0, 500),
+                    aqi=random.uniform(0, 500),
+                )
+                db.add(pollutant_reading)
+                
+                # Create corresponding weather data
+                # Extract coordinates from station's location WKT
+                if station.location:
+                    location_wkt = station.location
+                else:
+                    # Create a random point if location not available
+                    location_wkt = WKTElement(f"POINT({random.uniform(-180, 180)} {random.uniform(-90, 90)})", srid=4326)
+                
+                weather_data = WeatherData(
+                    timestamp=current_timestamp,
+                    temperature=random.uniform(-10, 50),
+                    humidity=random.uniform(0, 100),
+                    wind_speed=random.uniform(0, 20),
+                    wind_direction=random.uniform(0, 360),
+                    pressure=random.uniform(900, 1100),
+                    location=location_wkt
+                )
+                db.add(weather_data)
+                
+                # Increment timestamp for the next reading
+                current_timestamp = current_timestamp.replace(hour=current_timestamp.hour+1)
+            
         db.commit()
 
         print("Test data populated successfully.")

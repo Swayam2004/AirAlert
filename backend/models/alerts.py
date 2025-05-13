@@ -17,6 +17,12 @@ class Alert(Base):
     alert_type = Column(String, nullable=False)  # e.g., 'pollution', 'weather', etc.
     severity_level = Column(Integer, nullable=False)  # 0-5 scale
     affected_area = Column(Geometry("GEOMETRY", srid=4326))  # Polygon of affected area
+    
+    # Added center coordinates for easier frontend rendering
+    center_latitude = Column(Float, nullable=True)
+    center_longitude = Column(Float, nullable=True)
+    impact_radius_km = Column(Float, nullable=True)  # Radius of impact area in kilometers
+    
     pollutant = Column(String)  # Specific pollutant of concern
     threshold_value = Column(Float)  # Threshold value that triggered the alert
     current_value = Column(Float)  # Current measured value
@@ -24,6 +30,7 @@ class Alert(Base):
     created_at = Column(DateTime, default=datetime.now)
     expires_at = Column(DateTime)  # When the alert expires
     is_active = Column(Boolean, default=True)  # Whether the alert is still active
+    priority = Column(Float, default=0.0)  # Priority score for the alert (calculated from severity and vulnerability)
     
     # Relationships
     notifications = relationship("Notification", back_populates="alert", cascade="all, delete-orphan")

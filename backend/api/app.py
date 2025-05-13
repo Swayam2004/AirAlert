@@ -201,12 +201,24 @@ def get_air_quality(
     - start_date: Filter from this date (ISO format)
     - end_date: Filter to this date (ISO format)
     """
-    from sqlalchemy import select, and_
+    from sqlalchemy import select, and_, outerjoin
     
     logger.info(f"API request: /api/air_quality with params station_id={station_id}, pollutant={pollutant}, start_date={start_date}, end_date={end_date}")
     
-    # Build query
-    query = select(PollutantReading)
+    # Build query with joined WeatherData
+    from ..models.air_quality import WeatherData
+    
+    # Build query with weather data join
+    query = (
+        select(PollutantReading, WeatherData)
+        .outerjoin(
+            WeatherData,
+            and_(
+                PollutantReading.timestamp == WeatherData.timestamp,
+                PollutantReading.station_id == WeatherData.station_id
+            )
+        )
+    )
     
     # Apply filters
     filters = []
@@ -286,8 +298,8 @@ def get_air_quality(
     
     # Execute query
     result = db.execute(query.order_by(PollutantReading.timestamp.desc()).limit(1000))
-    readings = result.scalars().all()
-    logger.info(f"Query returned {len(readings)} readings")
+    readings_with_weather = result.all()
+    logger.info(f"Query returned {len(readings_with_weather)} readings with weather data")
     
     # If pollutant is specified, filter the results
     if pollutant is not None:
@@ -298,18 +310,18 @@ def get_air_quality(
             
         # Filter out null values for the specified pollutant
         filtered_readings = []
-        for reading in readings:
+        for reading, weather in readings_with_weather:
             value = getattr(reading, pollutant)
             if value is not None:
-                filtered_readings.append(reading)
+                filtered_readings.append((reading, weather))
         
         logger.info(f"Filtered to {len(filtered_readings)} readings with non-null {pollutant} values")
-        readings = filtered_readings
+        readings_with_weather = filtered_readings
     
     # Format response
     formatted_readings = []
-    for reading in readings:
-        formatted_readings.append({
+    for reading, weather in readings_with_weather:
+        reading_data = {
             "id": reading.id,
             "station_id": reading.station_id,
             "timestamp": reading.timestamp.isoformat(),
@@ -320,14 +332,16 @@ def get_air_quality(
             "so2": reading.so2,
             "co": reading.co,
             "aqi": reading.aqi,
-            "temperature": reading.temperature,
-            "humidity": reading.humidity,
-            "wind_speed": reading.wind_speed,
-            "wind_direction": reading.wind_direction,
-            "pressure": reading.pressure
-        })
+            # Add weather data from joined WeatherData if available
+            "temperature": weather.temperature if weather else None,
+            "humidity": weather.humidity if weather else None,
+            "wind_speed": weather.wind_speed if weather else None,
+            "wind_direction": weather.wind_direction if weather else None,
+            "pressure": weather.pressure if weather else None
+        }
+        formatted_readings.append(reading_data)
     
-    logger.info(f"Returning {len(formatted_readings)} formatted readings")
+    logger.info(f"Returning {len(formatted_readings)} formatted readings with weather data")
     return {
         "count": len(formatted_readings),
         "readings": formatted_readings
@@ -910,11 +924,21 @@ def get_air_quality_compatible(
     """
     logger.info(f"Frontend compatible air quality endpoint called with params: station_id={station_id}, pollutant={pollutant}, start_date={start_date}, end_date={end_date}")
     
-    # Build query
-    from sqlalchemy import select, and_
+    # Build query with joined WeatherData
+    from sqlalchemy import select, and_, outerjoin
+    from ..models.air_quality import WeatherData
     
-    # Build query
-    query = select(PollutantReading)
+    # Build query with weather data join
+    query = (
+        select(PollutantReading, WeatherData)
+        .outerjoin(
+            WeatherData,
+            and_(
+                PollutantReading.timestamp == WeatherData.timestamp,
+                PollutantReading.station_id == WeatherData.station_id
+            )
+        )
+    )
     
     # Apply filters
     filters = []
@@ -991,9 +1015,9 @@ def get_air_quality_compatible(
         logger.warning(f"Could not compile query to string: {str(e)}")
     
     # Execute query
-    result = db.execute(query.order_by(PollutantReading.timestamp.desc()).limit(1000)) 
-    readings = result.scalars().all()
-    logger.info(f"Query returned {len(readings)} readings")
+    result = db.execute(query.order_by(PollutantReading.timestamp.desc()).limit(1000))
+    readings_with_weather = result.all()
+    logger.info(f"Query returned {len(readings_with_weather)} readings with weather data")
     
     # If pollutant is specified, filter the results
     if pollutant is not None:
@@ -1004,18 +1028,18 @@ def get_air_quality_compatible(
             
         # Filter out null values for the specified pollutant
         filtered_readings = []
-        for reading in readings:
+        for reading, weather in readings_with_weather:
             value = getattr(reading, pollutant)
             if value is not None:
-                filtered_readings.append(reading)
+                filtered_readings.append((reading, weather))
         
         logger.info(f"Filtered to {len(filtered_readings)} readings with non-null {pollutant} values")
-        readings = filtered_readings
+        readings_with_weather = filtered_readings
     
     # Format response
     formatted_readings = []
-    for reading in readings:
-        formatted_readings.append({
+    for reading, weather in readings_with_weather:
+        reading_data = {
             "id": reading.id,
             "station_id": reading.station_id,
             "timestamp": reading.timestamp.isoformat(),
@@ -1026,12 +1050,14 @@ def get_air_quality_compatible(
             "so2": reading.so2,
             "co": reading.co,
             "aqi": reading.aqi,
-            "temperature": reading.temperature,
-            "humidity": reading.humidity,
-            "wind_speed": reading.wind_speed,
-            "wind_direction": reading.wind_direction,
-            "pressure": reading.pressure
-        })
+            # Add weather data from joined WeatherData if available
+            "temperature": weather.temperature if weather else None,
+            "humidity": weather.humidity if weather else None,
+            "wind_speed": weather.wind_speed if weather else None,
+            "wind_direction": weather.wind_direction if weather else None,
+            "pressure": weather.pressure if weather else None
+        }
+        formatted_readings.append(reading_data)
     
     logger.info(f"Returning {len(formatted_readings)} formatted readings")
     return {
