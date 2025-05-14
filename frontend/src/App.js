@@ -17,6 +17,16 @@ import UserSettings from "./components/UserSettings";
 import DataExplorer from "./components/DataExplorer";
 import Login from "./components/Login";
 import AuthService from "./services/auth";
+import HomePage from "./components/HomePage";
+import HowToOperate from "./components/HowToOperate";
+import MonitoringDashboard from "./components/MonitoringDashboard";
+import ProfilesPage from "./components/ProfilesPage";
+import AlertsPage from "./components/AlertsPage";
+import AdminPanel from "./components/AdminPanel";
+import LoginPage from "./components/LoginPage";
+import SignupPage from "./components/SignupPage";
+import AboutUsPage from "./components/AboutUsPage";
+import ContactUsPage from "./components/ContactUsPage";
 
 // Configure axios defaults
 axios.defaults.baseURL = process.env.REACT_APP_API_URL || ""; // Use environment variable or default to current host
@@ -238,10 +248,16 @@ function App() {
 
 				<main className="app-main">
 					<Routes>
-						<Route path="/" element={<Dashboard />} />
-						<Route path="/stations" element={<MonitoringStations />} />
-						<Route path="/data-explorer" element={<DataExplorer />} />
-						<Route path="/login" element={<Login onLoginSuccess={handleLogin} isAuthenticated={isAuthenticated} />} />
+						<Route path="/" element={<HomePage />} />
+						<Route path="/how-to-operate" element={<HowToOperate />} />
+						<Route path="/dashboard" element={<MonitoringDashboard />} />
+						<Route path="/profile" element={<ProfilesPage />} />
+						<Route path="/alerts" element={<AlertsPage />} />
+						<Route path="/admin" element={<AdminPanel />} />
+						<Route path="/login" element={<LoginPage />} />
+						<Route path="/signup" element={<SignupPage />} />
+						<Route path="/about-us" element={<AboutUsPage />} />
+						<Route path="/contact-us" element={<ContactUsPage />} />
 					</Routes>
 				</main>
 

@@ -8,6 +8,8 @@ import json
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
+from pydantic import BaseModel
 
 from ..config import settings
 from ..dependencies import get_current_user
@@ -16,7 +18,8 @@ from ...models.users import (
     User, 
     AlertSubscription, 
     HealthProfile,
-    WebPushSubscription
+    WebPushSubscription,
+    NotificationPreference
 )
 
 # Set up logging
@@ -426,3 +429,42 @@ async def get_vapid_public_key():
         return {"status": "error", "message": "Web push notifications not configured"}
     
     return {"status": "success", "vapidPublicKey": settings.vapid_public_key}
+
+
+class NotificationPreferenceRequest(BaseModel):
+    user_id: int
+    sensitivity_level: int
+    preferred_pollutants: list[str]
+
+@router.post("/preferences")
+def set_notification_preferences(request: NotificationPreferenceRequest, db: Session = Depends(get_db)):
+    """Set notification preferences for a user."""
+    existing_preference = db.query(NotificationPreference).filter(
+        NotificationPreference.user_id == request.user_id
+    ).first()
+
+    if existing_preference:
+        existing_preference.sensitivity_level = request.sensitivity_level
+        existing_preference.preferred_pollutants = request.preferred_pollutants
+    else:
+        new_preference = NotificationPreference(
+            user_id=request.user_id,
+            sensitivity_level=request.sensitivity_level,
+            preferred_pollutants=request.preferred_pollutants
+        )
+        db.add(new_preference)
+
+    db.commit()
+    return {"message": "Notification preferences updated successfully."}
+
+@router.get("/preferences/{user_id}")
+def get_notification_preferences(user_id: int, db: Session = Depends(get_db)):
+    """Get notification preferences for a user."""
+    preference = db.query(NotificationPreference).filter(
+        NotificationPreference.user_id == user_id
+    ).first()
+
+    if not preference:
+        raise HTTPException(status_code=404, detail="Preferences not found.")
+
+    return preference

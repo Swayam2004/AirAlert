@@ -12,6 +12,10 @@ from sqlalchemy.dialects.postgresql import insert
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
 import random
+import requests
+from backend.models.database import get_db
+from backend.models.air_quality import AirQuality
+from sqlalchemy.orm import Session
 
 from .fetchers.base import DataFetcher
 from ..models.air_quality import MonitoringStation, PollutantReading, WeatherData
@@ -523,3 +527,24 @@ async def populate_test_data():
         db.rollback()
     finally:
         db.close()
+
+def fetch_sentinel5p_data():
+    """Fetch air quality data from Sentinel-5P API."""
+    url = "https://sentinel5p-api.example.com/data"
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.json()
+
+def integrate_sentinel5p_data(db: Session = get_db()):
+    """Integrate Sentinel-5P data into the database."""
+    data = fetch_sentinel5p_data()
+    for record in data:
+        air_quality = AirQuality(
+            station_id=record["station_id"],
+            date=record["date"],
+            pollutant=record["pollutant"],
+            value=record["value"],
+            unit=record["unit"]
+        )
+        db.add(air_quality)
+    db.commit()

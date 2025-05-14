@@ -16,6 +16,11 @@ from ..models.alerts import Alert, Notification
 from ..models.users import User
 from .email import EmailSender
 
+from backend.notifications.email import send_email
+from backend.notifications.web_push import send_web_push
+from backend.models.database import get_db
+from sqlalchemy.orm import Session
+
 class NotificationPreferences(BaseModel):
     """User notification preferences model."""
     email: bool = True
@@ -224,3 +229,21 @@ class NotificationManager:
             channels.add("web")
             
         return channels
+
+def notify_users(alert: Alert, db: Session = get_db()):
+    """Send notifications to users for a given alert."""
+    users = db.query(User).all()
+    for user in users:
+        # Send email notification
+        send_email(
+            to=user.email,
+            subject=f"Air Quality Alert: {alert.pollutant}",
+            body=f"The AQI for {alert.pollutant} has exceeded the threshold. Current value: {alert.value} {alert.unit}."
+        )
+
+        # Send web push notification
+        send_web_push(
+            user_id=user.id,
+            title="Air Quality Alert",
+            message=f"The AQI for {alert.pollutant} has exceeded the threshold. Current value: {alert.value} {alert.unit}."
+        )
