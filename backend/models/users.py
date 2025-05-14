@@ -116,3 +116,22 @@ class HealthProfile(Base):
     
     def __repr__(self):
         return f"<HealthProfile(user={self.user_id})>"
+
+class WebPushSubscription(Base):
+    """User's web push notification subscription."""
+    
+    __tablename__ = "web_push_subscriptions"
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    subscription_json = Column(Text, nullable=False)  # Push subscription info as JSON
+    user_agent = Column(String)  # Browser/device info
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Relationship
+    user = relationship("User")
+    
+    def __repr__(self):
+        return f"<WebPushSubscription(id={self.id}, user={self.user_id})>"

@@ -307,5 +307,4 @@ AirAlert implements several security measures:
 - [European Space Agency](https://www.esa.int/) for Sentinel-5P data
 - Research from VayuBuddy and similar air quality monitoring systems
 
-
 <div align="center">Made with ❤️ by the <b>AirAlert Team</b></div>

@@ -150,8 +150,16 @@ class EmailSender(NotificationSender):
         """
         # Default formatting, can be customized based on alert type
         severity_emoji = self._get_severity_emoji(notification.alert.severity_level)
+        pollutant = notification.alert.pollutant.upper()
+        severity_level = notification.alert.severity_level
+        current_value = notification.alert.current_value
+        threshold = notification.alert.threshold_value
         
-        subject = f"{severity_emoji} Air Quality Alert: {notification.alert.pollutant} levels are elevated"
+        # Get health advice based on pollutant and severity
+        health_advice = self._get_health_advice(pollutant, severity_level)
+        
+        # Format subject line
+        subject = f"{severity_emoji} Air Quality Alert: {pollutant} levels are {self._get_severity_text(severity_level)}"
         
         # Create HTML body with styling
         body = f"""
@@ -160,10 +168,25 @@ class EmailSender(NotificationSender):
             <style>
                 body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
                 .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background-color: #3498db; color: white; padding: 10px; text-align: center; }}
+                .header {{ background-color: #3498db; color: white; padding: 10px; text-align: center; border-radius: 5px 5px 0 0; }}
                 .content {{ padding: 20px; background-color: #f9f9f9; }}
-                .footer {{ font-size: 12px; text-align: center; margin-top: 20px; color: #777; }}
+                .footer {{ font-size: 12px; text-align: center; margin-top: 20px; color: #777; padding: 10px; background-color: #f1f1f1; border-radius: 0 0 5px 5px; }}
                 .alert-level {{ font-weight: bold; }}
+                .alert-details {{ background-color: #eaf2f8; padding: 15px; border-radius: 5px; margin: 15px 0; }}
+                .health-advice {{ background-color: #e8f8f5; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #3498db; }}
+                .health-advice h3 {{ margin-top: 0; color: #16a085; }}
+                .health-advice ul {{ padding-left: 20px; }}
+                .value {{ font-weight: bold; color: {self._get_severity_color(severity_level)}; }}
+                .button {{ display: inline-block; background-color: #3498db; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; margin-top: 15px; }}
+                .aqi-scale {{ display: flex; margin: 15px 0; border-radius: 5px; overflow: hidden; }}
+                .aqi-segment {{ height: 10px; flex-grow: 1; }}
+                .aqi-good {{ background-color: #00e400; }}
+                .aqi-moderate {{ background-color: #ffff00; }}
+                .aqi-unhealthy-sensitive {{ background-color: #ff7e00; }}
+                .aqi-unhealthy {{ background-color: #ff0000; }}
+                .aqi-very-unhealthy {{ background-color: #8f3f97; }}
+                .aqi-hazardous {{ background-color: #7e0023; }}
+                .aqi-marker {{ width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 10px solid black; margin-left: calc({min(severity_level * 20, 100)}% - 10px); }}
             </style>
         </head>
         <body>
@@ -176,22 +199,44 @@ class EmailSender(NotificationSender):
                     
                     <p>{notification.message}</p>
                     
-                    <p>Details:</p>
-                    <ul>
-                        <li>Pollutant: {notification.alert.pollutant}</li>
-                        <li>Current Value: {notification.alert.current_value}</li>
-                        <li>Threshold: {notification.alert.threshold_value}</li>
-                        <li>Location: Your {notification.location_type} area</li>
-                        <li>Alert Time: {notification.alert.created_at.strftime('%Y-%m-%d %H:%M')}</li>
-                    </ul>
+                    <div class="alert-details">
+                        <h3>Alert Details:</h3>
+                        <ul>
+                            <li>Pollutant: <span class="value">{pollutant}</span></li>
+                            <li>Current Value: <span class="value">{current_value}</span> (Threshold: {threshold})</li>
+                            <li>Status: <span class="value">{self._get_severity_text(severity_level)}</span></li>
+                            <li>Location: Your {notification.location_type} area</li>
+                            <li>Alert Time: {notification.alert.created_at.strftime('%Y-%m-%d %H:%M')}</li>
+                        </ul>
+                        
+                        <div class="aqi-scale">
+                            <div class="aqi-segment aqi-good"></div>
+                            <div class="aqi-segment aqi-moderate"></div>
+                            <div class="aqi-segment aqi-unhealthy-sensitive"></div>
+                            <div class="aqi-segment aqi-unhealthy"></div>
+                            <div class="aqi-segment aqi-very-unhealthy"></div>
+                            <div class="aqi-segment aqi-hazardous"></div>
+                        </div>
+                        <div class="aqi-marker"></div>
+                    </div>
+                    
+                    <div class="health-advice">
+                        <h3>Health Recommendations:</h3>
+                        <ul>
+                            {self._format_recommendations_list(health_advice)}
+                        </ul>
+                    </div>
                     
                     <p>Stay safe and take necessary precautions.</p>
                     
                     <p>Regards,<br/>AirAlert Team</p>
+                    
+                    <a href="https://airalert-dashboard.example.com/alerts/{notification.alert.id}" class="button">View on Dashboard</a>
                 </div>
                 <div class="footer">
                     <p>This is an automated message from the AirAlert air quality monitoring system.</p>
-                    <p>To update your notification preferences, visit your account settings.</p>
+                    <p>To update your notification preferences, visit your <a href="https://airalert-dashboard.example.com/profile/settings">account settings</a>.</p>
+                    <p>If you wish to unsubscribe from these alerts, <a href="https://airalert-dashboard.example.com/unsubscribe?token={self._generate_unsubscribe_token(notification.user_id)}">click here</a>.</p>
                 </div>
             </div>
         </body>
@@ -281,6 +326,155 @@ class EmailSender(NotificationSender):
         
         await self.db_session.execute(stmt)
         await self.db_session.commit()
+    
+    def _get_health_advice(self, pollutant: str, severity_level: int) -> List[str]:
+        """
+        Get health advice based on pollutant type and severity level.
+        
+        Args:
+            pollutant: Type of pollutant (PM25, PM10, O3, NO2, SO2, CO)
+            severity_level: Severity level (0-5)
+            
+        Returns:
+            List of health advice strings
+        """
+        # Generic advice based on severity level
+        generic_advice = {
+            0: ["Air quality is good. No special precautions needed."],
+            1: [
+                "Sensitive individuals should consider limiting prolonged outdoor exertion.",
+                "Consider keeping windows closed during peak pollution hours."
+            ],
+            2: [
+                "People with respiratory or heart conditions should reduce outdoor activities.",
+                "Children and elderly should limit prolonged outdoor exposure.",
+                "Consider using air purifiers indoors."
+            ],
+            3: [
+                "Avoid prolonged or heavy exertion outside.",
+                "People with respiratory or heart conditions should stay indoors.",
+                "Keep windows and doors closed.",
+                "Use air purifiers if available."
+            ],
+            4: [
+                "Everyone should avoid all outdoor activities.",
+                "Wear N95 masks if you must go outside.",
+                "Stay indoors with windows closed and air purifiers running.",
+                "Seek medical attention if experiencing breathing difficulties."
+            ],
+            5: [
+                "Health alert: everyone should stay indoors.",
+                "Keep all windows and doors closed tightly.",
+                "Avoid any physical exertion.",
+                "Use air purifiers on highest setting.",
+                "Contact healthcare provider if experiencing any respiratory symptoms."
+            ]
+        }.get(severity_level, ["Take precautions according to local health guidelines."])
+        
+        # Pollutant-specific advice
+        pollutant_advice = {
+            "PM25": {
+                # PM2.5 specific advice by severity level
+                1: ["PM2.5 can penetrate deep into the lungs; sensitive individuals should carry inhalers if prescribed."],
+                2: ["PM2.5 can worsen asthma and other respiratory conditions; keep medications readily accessible."],
+                3: ["PM2.5 can enter the bloodstream; consider wearing a properly fitted N95 mask outdoors."],
+                4: ["High PM2.5 levels may cause respiratory distress even in healthy individuals; limit all outdoor exposure."],
+                5: ["Extremely high PM2.5 levels; create a clean air room in your home using HEPA filters."]
+            },
+            "PM10": {
+                # PM10 specific advice
+                1: ["PM10 can irritate eyes and throat; rinse eyes with clean water if irritation occurs."],
+                2: ["PM10 can trigger allergies; take prescribed allergy medication if needed."],
+                3: ["High PM10 levels can cause significant respiratory irritation; consider wearing a mask outdoors."],
+                4: ["Keep pets indoors; PM10 affects animals as well as humans."],
+                5: ["Extremely high PM10 levels; avoid opening doors and windows to prevent dust intrusion."]
+            },
+            "O3": {
+                # Ozone specific advice
+                1: ["Ozone levels are elevated; consider outdoor activities in the morning when levels are lower."],
+                2: ["Ozone can irritate the respiratory system; drink plenty of water to stay hydrated."],
+                3: ["High ozone levels can reduce lung function; avoid exercising near high-traffic areas."],
+                4: ["Very high ozone levels can cause chest pain and coughing; remain indoors."],
+                5: ["Dangerous ozone levels; avoid any outdoor exposure and keep buildings well-sealed."]
+            },
+            "NO2": {
+                # NO2 specific advice
+                1: ["NO2 can irritate airways; avoid busy roads and high-traffic areas."],
+                2: ["NO2 can worsen asthma symptoms; keep reliever medications accessible."],
+                3: ["High NO2 levels can reduce immunity to lung infections; avoid crowded indoor spaces."],
+                4: ["Very high NO2 levels; keep children and elderly well away from traffic areas."],
+                5: ["Dangerous NO2 levels; consider temporarily relocating if you are in a high-traffic area."]
+            },
+            "SO2": {
+                # SO2 specific advice
+                1: ["SO2 can cause eye and throat irritation; rinse with clean water if irritation occurs."],
+                2: ["SO2 can trigger asthma symptoms; use preventative inhalers as prescribed."],
+                3: ["High SO2 levels can cause breathing problems; stay hydrated and keep medications accessible."],
+                4: ["Very high SO2 levels can cause serious respiratory effects; remain indoors with windows closed."],
+                5: ["Dangerous SO2 levels; if experiencing breathing difficulty, seek medical attention immediately."]
+            },
+            "CO": {
+                # CO specific advice
+                1: ["CO levels are elevated; ensure proper ventilation when using heating appliances."],
+                2: ["CO is odorless but dangerous; check that your CO detector is working properly."],
+                3: ["High CO levels can cause headaches and dizziness; ensure proper ventilation in enclosed spaces."],
+                4: ["Very high CO levels; if experiencing headache, dizziness, or nausea, seek fresh air immediately."],
+                5: ["Dangerous CO levels; evacuate the area and seek medical attention if experiencing symptoms."]
+            },
+            "AQI": {
+                # General AQI advice
+                1: ["Air quality is moderately affected; no special actions needed for most people."],
+                2: ["Unhealthy for sensitive groups; those with respiratory conditions should reduce outdoor activity."],
+                3: ["Unhealthy air quality; reduce time spent outdoors and strenuous activities."],
+                4: ["Very unhealthy air quality; avoid outdoor activities and keep windows closed."],
+                5: ["Hazardous air quality; everyone should avoid all outdoor exertion."]
+            }
+        }
+        
+        # Get specific advice for this pollutant and severity
+        specific_advice = pollutant_advice.get(pollutant, {}).get(severity_level, [])
+        
+        # Combine generic and specific advice
+        return generic_advice + specific_advice
+    
+    def _get_severity_text(self, severity_level: int) -> str:
+        """Get text description for severity level."""
+        descriptions = {
+            0: "Good",
+            1: "Moderate",
+            2: "Unhealthy for Sensitive Groups",
+            3: "Unhealthy",
+            4: "Very Unhealthy",
+            5: "Hazardous"
+        }
+        return descriptions.get(severity_level, "Unknown")
+    
+    def _get_severity_color(self, severity_level: int) -> str:
+        """Get color for severity level."""
+        colors = {
+            0: "#00e400",  # Green
+            1: "#ffff00",  # Yellow
+            2: "#ff7e00",  # Orange
+            3: "#ff0000",  # Red
+            4: "#8f3f97",  # Purple
+            5: "#7e0023"   # Maroon
+        }
+        return colors.get(severity_level, "#777777")
+    
+    def _format_recommendations_list(self, recommendations: List[str]) -> str:
+        """Format list of recommendations as HTML list items."""
+        return "".join([f"<li>{recommendation}</li>" for recommendation in recommendations])
+    
+    def _generate_unsubscribe_token(self, user_id: int) -> str:
+        """Generate token for unsubscribe link."""
+        import hashlib
+        import time
+        
+        # Create a simple token using user_id and timestamp
+        # In production, use a proper JWT or signed token
+        timestamp = int(time.time())
+        token_string = f"{user_id}:{timestamp}:{self.config.get('secret_key', 'airalert')}"
+        return hashlib.sha256(token_string.encode()).hexdigest()
 
 class NotificationManager:
     """Manages notifications for AirAlert."""
