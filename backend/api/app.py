@@ -7,6 +7,7 @@ from datetime import datetime
 
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .config import settings
 from ..models.database import Base, engine, init_app
@@ -21,7 +22,7 @@ from .processing.routes import router as processing_router
 # Set up logging configuration
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levellevelname)s - %(message)s",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.FileHandler("airalert.log"),
         logging.StreamHandler()
@@ -39,11 +40,36 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins in development
+    allow_origins=settings.cors_origins if hasattr(settings, "cors_origins") else ["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
+# Add exception handling middleware
+@app.middleware("http")
+async def db_session_middleware(request, call_next):
+    """
+    Middleware to handle database session management and handle 
+    SQLAlchemy ChunkedIteratorResult correctly for async operations.
+    """
+    try:
+        response = await call_next(request)
+        return response
+    except TypeError as e:
+        if "ChunkedIteratorResult" in str(e) and "await" in str(e):
+            logger.error("SQLAlchemy ChunkedIteratorResult await error. Update route handlers to use .scalars().all() instead of await.")
+            return JSONResponse(
+                status_code=500,
+                content={"detail": "Database query error. Please contact the administrator."},
+            )
+        raise
+    except Exception as e:
+        logger.error(f"Request error: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": str(e)},
+        )
 
 # Include routers with prefixes
 app.include_router(auth_router, prefix="/api")

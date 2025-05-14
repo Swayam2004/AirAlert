@@ -50,7 +50,7 @@ async def get_alerts(
     query = select(Alert).where(and_(*filters) if filters else True)
     
     # Execute query
-    result = await db.execute(query.order_by(Alert.created_at.desc()))
+    result = db.execute(query.order_by(Alert.created_at.desc()))  # Remove await
     alerts = result.scalars().all()
     
     # Format response
@@ -87,7 +87,7 @@ async def get_alert(
     - alert_id: ID of the alert to retrieve
     """
     query = select(Alert).where(Alert.id == alert_id)
-    result = await db.execute(query)
+    result = await db.execute(query)  # Added await
     alert = result.scalar_one_or_none()
     
     if not alert:
@@ -123,7 +123,7 @@ async def get_user_notifications(
     """
     # Check if user exists
     user_query = select(User).where(User.id == user_id)
-    result = await db.execute(user_query)
+    result = await db.execute(user_query)  # Added await
     user = result.scalar_one_or_none()
     
     if not user:
@@ -141,7 +141,7 @@ async def get_user_notifications(
     ).where(and_(*filters))
     
     # Execute query
-    result = await db.execute(query.order_by(Notification.sent_at.desc()))
+    result = await db.execute(query.order_by(Notification.sent_at.desc()))  # Added await
     notifications_with_alerts = result.all()
     
     # Format response
@@ -182,7 +182,7 @@ async def mark_notification_read(
     """
     # Check if notification exists
     query = select(Notification).where(Notification.id == notification_id)
-    result = await db.execute(query)
+    result = await db.execute(query)  # Added await
     notification = result.scalar_one_or_none()
     
     if not notification:
