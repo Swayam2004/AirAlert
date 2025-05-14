@@ -1,0 +1,6 @@
+services:
+  airalert:
+    image: airalert
+    build:
+      context: .
+      dockerfile: ./Dockerfile

@@ -1,7 +1,7 @@
 import sqlite3
 
 def populate_locations():
-    db_path = "/home/swayam/projects/AirAlert/airalert.db"
+    db_path = r"../../airalert.db"
     connection = sqlite3.connect(db_path)
 
     # Enable SpatiaLite extension

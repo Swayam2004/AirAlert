@@ -28,7 +28,7 @@ engine = create_engine(  # Changed to synchronous engine
 def load_spatialite(dbapi_connection, connection_record):
     if isinstance(dbapi_connection, sqlite3.Connection):
         dbapi_connection.enable_load_extension(True)
-        dbapi_connection.load_extension("mod_spatialite")
+        dbapi_connection.load_extension(r"E:\AirAlert\spatialite\mod_spatialite.dll")
         dbapi_connection.enable_load_extension(False)
 
 # Create session factory
