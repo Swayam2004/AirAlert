@@ -1,0 +1,51 @@
+/**
+ * Alert component styles for AirAlert
+ */
+.alert {
+	padding: 1rem;
+	margin-bottom: 1rem;
+	border-radius: var(--border-radius);
+}
+
+.alert.success {
+	background-color: rgba(46, 204, 113, 0.1);
+	border: 1px solid rgba(46, 204, 113, 0.5);
+	color: #27ae60;
+}
+
+.alert.warning {
+	background-color: rgba(241, 196, 15, 0.1);
+	border: 1px solid rgba(241, 196, 15, 0.5);
+	color: #f39c12;
+}
+
+.alert.danger {
+	background-color: rgba(231, 76, 60, 0.1);
+	border: 1px solid rgba(231, 76, 60, 0.5);
+	color: #e74c3c;
+}
+
+.alert.info {
+	background-color: rgba(52, 152, 219, 0.1);
+	border: 1px solid rgba(52, 152, 219, 0.5);
+	color: #2980b9;
+}
+
+.alert-icon {
+	margin-right: 0.75rem;
+}
+
+.alert-title {
+	font-weight: 600;
+	margin-bottom: 0.5rem;
+}
+
+.alert-content {
+	font-size: 0.9rem;
+}
+
+.alert-actions {
+	margin-top: 0.75rem;
+	display: flex;
+	gap: 0.5rem;
+}

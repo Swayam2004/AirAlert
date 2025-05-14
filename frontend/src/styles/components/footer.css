@@ -1,0 +1,29 @@
+/**
+ * Footer component styles for AirAlert
+ */
+.App-footer {
+	background-color: var(--header-bg);
+	color: white;
+	padding: 1.5rem 2rem;
+	margin-top: 3rem;
+}
+
+.footer-content {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	max-width: 1400px;
+	margin: 0 auto;
+}
+
+.footer-links a {
+	color: rgba(255, 255, 255, 0.7);
+	margin-left: 1.5rem;
+	text-decoration: none;
+	transition: var(--transition);
+}
+
+.footer-links a:hover {
+	color: white;
+	text-decoration: underline;
+}

@@ -1,0 +1,44 @@
+/**
+ * Header component styles for AirAlert
+ */
+.App-header {
+	background-color: var(--header-bg);
+	color: white;
+	padding: 1rem 2rem;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	min-height: auto;
+}
+
+.header-content {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	max-width: 1400px;
+	margin: 0 auto;
+	width: 100%;
+}
+
+.logo-container {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.logo-container h1 {
+	margin: 0;
+	font-size: 2rem;
+	color: #fff;
+}
+
+.tagline {
+	font-size: 0.9rem;
+	opacity: 0.8;
+}
+
+.api-status-warning {
+	background-color: #f39c12;
+	color: #fff;
+	padding: 0.5rem 1rem;
+	border-radius: var(--border-radius);
+	font-size: 0.9rem;
+}

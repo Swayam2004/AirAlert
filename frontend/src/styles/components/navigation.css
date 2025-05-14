@@ -1,0 +1,70 @@
+/**
+ * Navigation component styles for AirAlert
+ */
+.main-navigation {
+	background-color: rgba(255, 255, 255, 0.95);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	position: sticky;
+	top: 0;
+	z-index: 100;
+}
+
+.main-navigation ul {
+	display: flex;
+	list-style: none;
+	max-width: 1400px;
+	margin: 0 auto;
+	padding: 0;
+}
+
+.main-navigation li {
+	margin: 0;
+}
+
+.main-navigation button {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 1rem 1.5rem;
+	font-size: 1rem;
+	color: var(--text-color);
+	transition: var(--transition);
+	position: relative;
+	box-shadow: none;
+}
+
+.main-navigation button::after {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	height: 3px;
+	width: 0;
+	background-color: var(--primary-color);
+	transition: var(--transition);
+}
+
+.main-navigation button:hover {
+	color: var(--primary-color);
+}
+
+.main-navigation button:hover {
+	background: linear-gradient(90deg, #5dade2, #85c1e9);
+	color: white;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.main-navigation button:hover {
+	background: linear-gradient(90deg, #5dade2, #85c1e9);
+	color: white;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.main-navigation button.active {
+	color: var(--primary-color);
+}
+
+.main-navigation button.active::after {
+	width: 80%;
+}

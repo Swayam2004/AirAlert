@@ -1,0 +1,45 @@
+/**
+ * Form component styles for AirAlert
+ */
+.form-group {
+	margin-bottom: 1.5rem;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 500;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+	width: 100%;
+	padding: 0.75rem;
+	border: 1px solid #ddd;
+	border-radius: var(--border-radius);
+	font-size: 1rem;
+	transition: var(--transition);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+	border-color: var(--primary-color);
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.auth-form {
+	max-width: 400px;
+	margin: 0 auto;
+}
+
+.toggle-auth-mode {
+	margin-top: 1.5rem;
+	text-align: center;
+}
