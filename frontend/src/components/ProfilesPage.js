@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getUserProfile, updateUserProfile } from "../services/api";
+import API from "../services/api";
 import "../styles/index.css";
 
 function ProfilesPage() {
@@ -10,7 +10,7 @@ function ProfilesPage() {
 	useEffect(() => {
 		const fetchProfile = async () => {
 			try {
-				const response = await getUserProfile(1); // Replace with dynamic user ID
+				const response = await API.getUserProfile(1); // Replace with dynamic user ID
 				setProfile(response.data);
 				setLoading(false);
 			} catch (err) {
@@ -24,7 +24,7 @@ function ProfilesPage() {
 
 	const handleUpdateProfile = async () => {
 		try {
-			await updateUserProfile(1, profile); // Replace with dynamic user ID
+			await API.updateUserProfile(1, profile); // Replace with dynamic user ID
 			alert("Profile updated successfully!");
 		} catch (err) {
 			alert("Failed to update profile: " + err.message);

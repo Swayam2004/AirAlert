@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { fetchUserNotifications, markNotificationRead } from "../services/api";
+import API from "../services/api";
 
 /**
  * NotificationCenter component that displays user notifications
@@ -20,8 +20,8 @@ const NotificationCenter = ({ userId, onSettingsClick }) => {
 		const loadNotifications = async () => {
 			setLoading(true);
 			try {
-				const response = await fetchUserNotifications(userId);
-				const notificationData = response.notifications || [];
+				const response = await API.getUserNotifications(userId);
+				const notificationData = response.data.notifications || [];
 				setNotifications(notificationData);
 
 				// Count unread notifications
@@ -47,7 +47,7 @@ const NotificationCenter = ({ userId, onSettingsClick }) => {
 	// Mark a notification as read
 	const handleMarkAsRead = async (notificationId) => {
 		try {
-			await markNotificationRead(notificationId);
+			await API.markNotificationRead(notificationId);
 
 			// Update local state to reflect the change
 			setNotifications(
@@ -78,7 +78,7 @@ const NotificationCenter = ({ userId, onSettingsClick }) => {
 			if (unreadIds.length === 0) return;
 
 			// Mark each as read
-			await Promise.all(unreadIds.map((id) => markNotificationRead(id)));
+			await Promise.all(unreadIds.map((id) => API.markNotificationRead(id)));
 
 			// Update all notifications in state
 			setNotifications(

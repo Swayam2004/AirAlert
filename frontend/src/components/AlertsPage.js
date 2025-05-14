@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getAlerts, createAlert } from "../services/api";
+import API from "../services/api";
 import "../styles/index.css";
 
 function AlertsPage() {
@@ -10,7 +10,7 @@ function AlertsPage() {
 	useEffect(() => {
 		const fetchAlerts = async () => {
 			try {
-				const response = await getAlerts();
+				const response = await API.getAlerts();
 				setAlerts(response.data);
 				setLoading(false);
 			} catch (err) {
@@ -27,7 +27,8 @@ function AlertsPage() {
 		const threshold = event.target.threshold.value;
 
 		try {
-			await createAlert({ threshold });
+			// Use the API object to create an alert
+			await API.createAlertSubscription(1, { alert_type: "air_quality", min_severity: threshold });
 			alert("Alert created successfully!");
 		} catch (err) {
 			alert("Failed to create alert: " + err.message);
