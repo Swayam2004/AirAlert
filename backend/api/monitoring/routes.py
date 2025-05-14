@@ -82,7 +82,7 @@ async def get_air_quality(
     - start_date: Filter from this date (ISO format)
     - end_date: Filter to this date (ISO format)
     """
-    logger.info(f"API request: /air_quality with params station_id={station_id}, pollutant={pollutant}, start_date={start_date}, end_date={end_date}")
+    # logger.info(f"API request: /air_quality with params station_id={station_id}, pollutant={pollutant}, start_date={start_date}, end_date={end_date}")
     
     # Build query with joined WeatherData
     query = (
@@ -132,7 +132,7 @@ async def get_air_quality(
     try:
         from sqlalchemy.dialects import sqlite
         query_str = str(query.compile(dialect=sqlite.dialect(), compile_kwargs={"literal_binds": True}))
-        logger.info(f"Executing query: {query_str}")
+        # logger.info(f"Executing query: {query_str}")
     except Exception as e:
         logger.warning(f"Could not compile query to string: {str(e)}")
     
