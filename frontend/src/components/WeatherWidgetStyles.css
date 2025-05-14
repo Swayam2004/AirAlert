@@ -1,0 +1,112 @@
+/**
+ * Enhanced Weather Widget Styling
+ * To optimize the layout and appearance of the Weather Conditions section
+ */
+
+/* Weather widget container */
+.weather-widget {
+	background: var(--card-bg);
+	border-radius: var(--border-radius);
+	padding: 1.5rem;
+	box-shadow: var(--box-shadow);
+	margin: 1.5rem 0;
+	width: 100%;
+}
+
+.weather-widget h3 {
+	font-family: "Poppins", sans-serif;
+	font-weight: 600;
+	margin-bottom: 1.25rem;
+	color: var(--text-color);
+}
+
+/* Enhanced weather grid layout */
+.weather-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr); /* 4 items in a row */
+	gap: 1.5rem;
+	width: 100%;
+}
+
+/* Weather item styling */
+.weather-item {
+	display: flex;
+	align-items: center;
+	background-color: rgba(240, 242, 245, 0.6);
+	border-radius: var(--border-radius);
+	padding: 1rem;
+	transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.weather-item:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+	background-color: rgba(240, 242, 245, 0.9);
+}
+
+.weather-icon {
+	font-size: 2.25rem;
+	margin-right: 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--primary-color);
+}
+
+.weather-data {
+	display: flex;
+	flex-direction: column;
+}
+
+.weather-value {
+	font-weight: bold;
+	font-size: 1.25rem;
+	margin-bottom: 0.25rem;
+}
+
+.weather-label {
+	color: var(--muted-text-color);
+	font-size: 0.85rem;
+}
+
+/* Responsive styling */
+@media (max-width: 1200px) {
+	.weather-grid {
+		grid-template-columns: repeat(4, 1fr); /* Maintain 4 columns on medium-large screens */
+	}
+}
+
+@media (max-width: 992px) {
+	.weather-grid {
+		grid-template-columns: repeat(4, 1fr); /* Maintain 4 columns on medium screens */
+	}
+
+	.weather-item {
+		padding: 0.875rem;
+	}
+
+	.weather-icon {
+		font-size: 1.75rem;
+	}
+
+	.weather-value {
+		font-size: 1.1rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.weather-grid {
+		grid-template-columns: repeat(2, 1fr); /* Switch to 2 columns on smaller screens */
+	}
+
+	.weather-item {
+		margin-bottom: 0.5rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.weather-grid {
+		grid-template-columns: 1fr; /* Single column on very small screens */
+		gap: 1rem;
+	}
+}

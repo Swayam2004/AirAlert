@@ -1,0 +1,355 @@
+/* filepath: /home/swayam/projects/AirAlert/frontend/src/components/DataExplorerPage.css */
+/* 
+ * Data Explorer Page Styles
+ * Following AirAlert Design System 
+ */
+
+.data-explorer {
+	padding: var(--space-5);
+	background-color: var(--bg-primary);
+	color: var(--text-primary);
+	min-height: calc(100vh - 80px);
+	max-width: var(--container-xl);
+	margin: 0 auto;
+}
+
+.data-explorer h1 {
+	margin-bottom: var(--space-5);
+	color: var(--primary-600);
+	font-family: var(--font-family-heading);
+	font-weight: var(--font-weight-semibold);
+	font-size: var(--font-size-3xl);
+}
+
+.data-explorer h2 {
+	font-size: var(--font-size-xl);
+	margin-bottom: var(--space-4);
+	color: var(--text-primary);
+	font-weight: var(--font-weight-semibold);
+}
+
+/* Tabs Navigation */
+.data-explorer-tabs {
+	display: flex;
+	gap: var(--space-2);
+	margin-bottom: var(--space-6);
+	border-bottom: 1px solid var(--border-muted);
+	padding-bottom: var(--space-1);
+	overflow-x: auto;
+	scrollbar-width: thin;
+}
+
+.data-explorer-tabs button {
+	background: transparent;
+	border: none;
+	padding: var(--space-3) var(--space-4);
+	font-size: var(--font-size-md);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition: all var(--transition-fast);
+	border-radius: var(--radius-md) var(--radius-md) 0 0;
+	white-space: nowrap;
+}
+
+.data-explorer-tabs button:hover {
+	color: var(--primary-600);
+	background-color: var(--primary-50);
+}
+
+.data-explorer-tabs button.active {
+	color: var(--primary-600);
+	border-bottom: 3px solid var(--primary-600);
+	font-weight: var(--font-weight-semibold);
+}
+
+/* Filters Section */
+.filters-container {
+	background: var(--bg-secondary);
+	border-radius: var(--radius-lg);
+	padding: var(--space-5);
+	margin-bottom: var(--space-5);
+	box-shadow: var(--elevation-2);
+}
+
+.filters {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-4);
+}
+
+.filter-row {
+	display: flex;
+	gap: var(--space-4);
+	flex-wrap: wrap;
+}
+
+.filter-row label {
+	flex: 1;
+	min-width: 200px;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-secondary);
+}
+
+.filter-row select,
+.filter-row input[type="date"] {
+	padding: var(--space-2) var(--space-3);
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-md);
+	font-size: var(--font-size-sm);
+	background-color: var(--bg-secondary);
+	color: var(--text-primary);
+	transition: border-color var(--transition-fast);
+}
+
+.filter-row select:hover,
+.filter-row input[type="date"]:hover {
+	border-color: var(--primary-400);
+}
+
+.filter-row select:focus,
+.filter-row input[type="date"]:focus {
+	outline: none;
+	border-color: var(--primary-500);
+	box-shadow: 0 0 0 2px var(--primary-100);
+}
+
+.checkbox-filter {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.checkbox-filter label {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	cursor: pointer;
+}
+
+.checkbox-filter input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	accent-color: var(--primary-500);
+}
+
+.apply-filters {
+	background-color: var(--primary-500);
+	color: white;
+	border: none;
+	padding: var(--space-3) var(--space-4);
+	border-radius: var(--radius-md);
+	font-weight: var(--font-weight-medium);
+	cursor: pointer;
+	transition: background-color var(--transition-fast);
+	margin-top: var(--space-3);
+	align-self: flex-start;
+}
+
+.apply-filters:hover {
+	background-color: var(--primary-600);
+	transform: translateY(-1px);
+}
+
+/* Data Explorer Content */
+.data-explorer-content {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-5);
+}
+
+/* Visualization Container */
+.visualization-container {
+	background: var(--bg-secondary);
+	border-radius: var(--radius-lg);
+	padding: var(--space-5);
+	margin-bottom: var(--space-5);
+	box-shadow: var(--elevation-2);
+}
+
+.chart-container {
+	position: relative;
+	height: 400px;
+	margin-bottom: var(--space-4);
+}
+
+/* Correlation Results */
+.correlation-results {
+	border-top: 1px dashed var(--border-muted);
+	padding-top: var(--space-4);
+}
+
+.correlation-results h3 {
+	color: var(--primary-600);
+	margin-bottom: var(--space-3);
+	font-weight: var(--font-weight-semibold);
+}
+
+/* Insights Container */
+.insights-container {
+	background: var(--bg-secondary);
+	border-radius: var(--radius-lg);
+	padding: var(--space-5);
+	margin-bottom: var(--space-5);
+	box-shadow: var(--elevation-2);
+}
+
+.ai-insights {
+	padding: var(--space-4);
+	border-radius: var(--radius-md);
+	background-color: var(--neutral-50);
+	margin-bottom: var(--space-4);
+}
+
+.ai-insights p {
+	margin-bottom: var(--space-3);
+	line-height: var(--line-height-relaxed);
+	color: var(--text-secondary);
+}
+
+.prediction-insights {
+	padding: var(--space-4);
+	border-radius: var(--radius-md);
+	background-color: var(--primary-50);
+	border-left: 4px solid var(--primary-500);
+}
+
+.prediction-insights h3 {
+	color: var(--primary-600);
+	margin-bottom: var(--space-3);
+	font-weight: var(--font-weight-semibold);
+}
+
+/* Export Container */
+.export-container {
+	background: var(--bg-secondary);
+	border-radius: var(--radius-lg);
+	padding: var(--space-5);
+	margin-bottom: var(--space-5);
+	box-shadow: var(--elevation-2);
+}
+
+.export-options {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-4);
+	margin-bottom: var(--space-5);
+	align-items: flex-end;
+}
+
+.export-options label {
+	flex: 1;
+	min-width: 200px;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-secondary);
+}
+
+.export-options select {
+	padding: var(--space-2) var(--space-3);
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-md);
+	font-size: var(--font-size-sm);
+	background-color: var(--bg-secondary);
+	color: var(--text-primary);
+}
+
+.export-button {
+	background-color: var(--primary-500);
+	color: white;
+	border: none;
+	padding: var(--space-3) var(--space-4);
+	border-radius: var(--radius-md);
+	cursor: pointer;
+	transition: all var(--transition-normal);
+	font-size: var(--font-size-md);
+	font-weight: var(--font-weight-medium);
+	min-width: 150px;
+}
+
+.export-button:hover {
+	background-color: var(--secondary-500);
+	transform: translateY(-2px);
+}
+
+.export-preview {
+	background-color: var(--neutral-50);
+	border-radius: var(--radius-md);
+	padding: var(--space-4);
+}
+
+.export-preview h3 {
+	margin-bottom: var(--space-3);
+	color: var(--text-primary);
+	font-weight: var(--font-weight-semibold);
+}
+
+.code-preview {
+	background-color: var(--neutral-100);
+	padding: var(--space-4);
+	border-radius: var(--radius-md);
+	font-family: var(--font-family-mono);
+	font-size: var(--font-size-sm);
+	overflow-x: auto;
+	white-space: pre-wrap;
+	color: var(--text-primary);
+}
+
+/* Loading State */
+.loading {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: var(--space-6);
+	color: var(--text-secondary);
+	font-style: italic;
+}
+
+/* No Data State */
+.no-data {
+	padding: var(--space-5);
+	text-align: center;
+	background-color: var(--neutral-50);
+	border-radius: var(--radius-md);
+	color: var(--text-tertiary);
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+	.data-explorer {
+		padding: var(--space-4);
+	}
+
+	.filter-row label {
+		min-width: 100%;
+	}
+
+	.export-options {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.export-button {
+		width: 100%;
+	}
+}
+
+@media screen and (max-width: 576px) {
+	.data-explorer-tabs {
+		gap: 0;
+	}
+
+	.data-explorer-tabs button {
+		padding: var(--space-2);
+		font-size: var(--font-size-sm);
+	}
+
+	.chart-container {
+		height: 300px;
+	}
+}
