@@ -1,0 +1,100 @@
+/**
+ * Responsive design utilities for AirAlert
+ */
+
+/* Media query breakpoints */
+/* Small devices (576px and up) */
+@media (min-width: 576px) {
+	.hide-sm {
+		display: none;
+	}
+
+	.show-sm {
+		display: block;
+	}
+}
+
+/* Medium devices (768px and up) */
+@media (min-width: 768px) {
+	.hide-md {
+		display: none;
+	}
+
+	.show-md {
+		display: block;
+	}
+
+	.container {
+		max-width: 720px;
+	}
+}
+
+/* Large devices (992px and up) */
+@media (min-width: 992px) {
+	.hide-lg {
+		display: none;
+	}
+
+	.show-lg {
+		display: block;
+	}
+
+	.container {
+		max-width: 960px;
+	}
+}
+
+/* Extra large devices (1200px and up) */
+@media (min-width: 1200px) {
+	.hide-xl {
+		display: none;
+	}
+
+	.show-xl {
+		display: block;
+	}
+
+	.container {
+		max-width: 1140px;
+	}
+}
+
+/* Responsive utilities */
+.d-none {
+	display: none !important;
+}
+
+.d-block {
+	display: block !important;
+}
+
+.d-flex {
+	display: flex !important;
+}
+
+/* Text alignment utilities */
+.text-left {
+	text-align: left !important;
+}
+
+.text-center {
+	text-align: center !important;
+}
+
+.text-right {
+	text-align: right !important;
+}
+
+@media (min-width: 768px) {
+	.text-md-left {
+		text-align: left !important;
+	}
+
+	.text-md-center {
+		text-align: center !important;
+	}
+
+	.text-md-right {
+		text-align: right !important;
+	}
+}

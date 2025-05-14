@@ -1,0 +1,66 @@
+/**
+ * API Status component styles for AirAlert
+ */
+.api-status-panel {
+	background-color: var(--card-bg);
+	padding: 1.5rem;
+	border-radius: var(--border-radius);
+	box-shadow: var(--box-shadow);
+	margin-bottom: 2rem;
+}
+
+.api-status-panel h3 {
+	margin-top: 0;
+	margin-bottom: 1rem;
+	font-size: 1.2rem;
+}
+
+.api-status-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.api-status-item {
+	display: flex;
+	align-items: center;
+	padding: 0.75rem;
+	border-bottom: 1px solid #eee;
+}
+
+.api-status-item:last-child {
+	border-bottom: none;
+}
+
+.api-name {
+	flex: 1;
+	font-weight: 500;
+}
+
+.api-timestamp {
+	margin-right: 1rem;
+	color: #777;
+	font-size: 0.9rem;
+}
+
+.api-badge {
+	padding: 0.25rem 0.75rem;
+	border-radius: 50px;
+	font-size: 0.8rem;
+	font-weight: 500;
+}
+
+.api-badge.online {
+	background-color: rgba(46, 204, 113, 0.15);
+	color: #27ae60;
+}
+
+.api-badge.offline {
+	background-color: rgba(231, 76, 60, 0.15);
+	color: #e74c3c;
+}
+
+.api-badge.degraded {
+	background-color: rgba(241, 196, 15, 0.15);
+	color: #f39c12;
+}

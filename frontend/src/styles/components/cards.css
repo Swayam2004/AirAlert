@@ -1,0 +1,66 @@
+/**
+ * Card component styles for AirAlert
+ */
+.stat-card {
+	background: var(--card-bg);
+	padding: 1.5rem;
+	border-radius: var(--border-radius);
+	box-shadow: var(--box-shadow);
+	display: flex;
+	align-items: center;
+	transition: var(--transition);
+}
+
+.stat-card:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 7px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+	font-size: 2.5rem;
+	margin-right: 1rem;
+}
+
+.stat-content {
+	flex: 1;
+}
+
+.stat-content h3 {
+	font-size: 0.9rem;
+	color: #777;
+	margin-bottom: 0.3rem;
+}
+
+.stat-value {
+	font-size: 1.8rem;
+	font-weight: 600;
+	display: flex;
+	align-items: baseline;
+}
+
+.stat-unit {
+	font-size: 0.9rem;
+	margin-left: 0.3rem;
+	color: #777;
+}
+
+.trend {
+	margin-left: auto;
+	font-size: 0.9rem;
+	font-weight: 500;
+}
+
+.trend.up {
+	color: var(--secondary-color);
+}
+
+.trend.down {
+	color: var(--accent-color);
+}
+
+.health-tips {
+	background-color: #f8f9fa;
+	padding: 1.5rem;
+	border-radius: var(--border-radius);
+	border-left: 4px solid var(--primary-color);
+}

@@ -1,0 +1,71 @@
+/**
+ * Notification component styles for AirAlert
+ */
+.notification-center {
+	max-width: 400px;
+	background-color: var(--card-bg);
+	border-radius: var(--border-radius);
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+	max-height: 500px;
+	display: flex;
+	flex-direction: column;
+	position: fixed;
+	top: 4rem;
+	right: 1rem;
+	z-index: 1000;
+}
+
+.notification-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 1rem;
+	border-bottom: 1px solid #eee;
+}
+
+.notification-header h3 {
+	margin: 0;
+}
+
+.notification-list {
+	overflow-y: auto;
+	flex: 1;
+}
+
+.notification-item {
+	padding: 1rem;
+	border-bottom: 1px solid #eee;
+	transition: var(--transition);
+}
+
+.notification-item:hover {
+	background-color: #f9f9f9;
+}
+
+.notification-item.unread {
+	background-color: rgba(52, 152, 219, 0.05);
+}
+
+.notification-title {
+	font-weight: 500;
+	margin-bottom: 0.25rem;
+}
+
+.notification-message {
+	font-size: 0.9rem;
+	color: #666;
+}
+
+.notification-timestamp {
+	font-size: 0.8rem;
+	color: #888;
+	margin-top: 0.5rem;
+	text-align: right;
+}
+
+.notification-actions {
+	display: flex;
+	justify-content: space-between;
+	padding: 1rem;
+	border-top: 1px solid #eee;
+}

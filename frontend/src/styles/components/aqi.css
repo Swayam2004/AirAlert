@@ -1,0 +1,65 @@
+/**
+ * AQI (Air Quality Index) specific styles for AirAlert
+ */
+
+/* AQI category styles */
+.aqi-good {
+	border-left: 4px solid #00e400;
+}
+
+.aqi-moderate {
+	border-left: 4px solid #ffff00;
+}
+
+.aqi-unhealthy-sensitive {
+	border-left: 4px solid #ff7e00;
+}
+
+.aqi-unhealthy {
+	border-left: 4px solid #ff0000;
+}
+
+.aqi-very-unhealthy {
+	border-left: 4px solid #8f3f97;
+}
+
+.aqi-hazardous {
+	border-left: 4px solid #7e0023;
+}
+
+/* Severity colors for notification items */
+.severity-good {
+	border-left: 4px solid #00e400;
+}
+.severity-moderate {
+	border-left: 4px solid #ffff00;
+}
+.severity-sensitive {
+	border-left: 4px solid #ff7e00;
+}
+.severity-unhealthy {
+	border-left: 4px solid #ff0000;
+}
+.severity-very-unhealthy {
+	border-left: 4px solid #8f3f97;
+}
+.severity-hazardous {
+	border-left: 4px solid #7e0023;
+}
+
+/* Severity colors in table rows */
+.severity-1 {
+	background-color: rgba(137, 207, 240, 0.1);
+}
+.severity-2 {
+	background-color: rgba(255, 215, 0, 0.1);
+}
+.severity-3 {
+	background-color: rgba(255, 165, 0, 0.1);
+}
+.severity-4 {
+	background-color: rgba(255, 69, 0, 0.1);
+}
+.severity-5 {
+	background-color: rgba(255, 0, 0, 0.1);
+}

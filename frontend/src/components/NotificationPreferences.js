@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { fetchUserPreferences, updateUserPreferences } from "../services/api";
+import NotificationChannels from "./NotificationPreferences/NotificationChannels";
+import SensitivitySettings from "./NotificationPreferences/SensitivitySettings";
+import AlertSubscriptions from "./NotificationPreferences/AlertSubscriptions";
+import HealthProfile from "./NotificationPreferences/HealthProfile";
 
 /**
  * NotificationPreferences component for managing user notification settings
@@ -222,36 +226,10 @@ const NotificationPreferences = ({ userId, onClose }) => {
 
 			{successMessage && <div className="success-message">{successMessage}</div>}
 
-			<div className="preferences-section">
-				<h3>Notification Channels</h3>
-				<p className="section-description">Choose how you want to receive air quality alerts</p>
-
-				<div className="channel-options">
-					<label className="channel-option">
-						<input type="checkbox" checked={preferences.notification_channels.email} onChange={() => handleChannelToggle("email")} />
-						<span className="channel-label">
-							<span className="channel-icon">✉️</span>
-							Email
-						</span>
-					</label>
-
-					<label className="channel-option">
-						<input type="checkbox" checked={preferences.notification_channels.sms} onChange={() => handleChannelToggle("sms")} />
-						<span className="channel-label">
-							<span className="channel-icon">📱</span>
-							SMS
-						</span>
-					</label>
-
-					<label className="channel-option">
-						<input type="checkbox" checked={preferences.notification_channels.app} onChange={() => handleChannelToggle("app")} />
-						<span className="channel-label">
-							<span className="channel-icon">🔔</span>
-							App Notifications
-						</span>
-					</label>
-				</div>
-			</div>
+			<NotificationChannels channels={preferences.notification_channels} onToggle={handleChannelToggle} />
+			<SensitivitySettings sensitivityLevel={preferences.sensitivity_level} onChange={handleSensitivityChange} />
+			<AlertSubscriptions subscriptions={preferences.alert_subscriptions} pollutants={pollutants} onToggle={handleSubscriptionToggle} onSeverityChange={handleMinSeverityChange} />
+			<HealthProfile healthProfile={preferences.health_profile} onConditionToggle={handleHealthConditionToggle} onAgeCategoryChange={handleAgeCategoryChange} />
 
 			<div className="preferences-section">
 				<h3>Notification Status</h3>
@@ -261,80 +239,6 @@ const NotificationPreferences = ({ userId, onClose }) => {
 					<span className="toggle-slider"></span>
 					<span className="toggle-label">{preferences.is_active ? "Notifications are enabled" : "Notifications are disabled"}</span>
 				</label>
-			</div>
-
-			<div className="preferences-section">
-				<h3>Sensitivity Setting</h3>
-				<p className="section-description">Choose your air quality sensitivity level</p>
-
-				<div className="sensitivity-options">
-					{sensitivityLevels.map((level) => (
-						<label key={level.value} className={`sensitivity-option ${preferences.sensitivity_level === level.value ? "selected" : ""}`}>
-							<input type="radio" name="sensitivity" value={level.value} checked={preferences.sensitivity_level === level.value} onChange={() => handleSensitivityChange(level.value)} />
-							<div className="sensitivity-content">
-								<h4>{level.label}</h4>
-								<p>{level.description}</p>
-							</div>
-						</label>
-					))}
-				</div>
-			</div>
-
-			<div className="preferences-section">
-				<h3>Alert Subscriptions</h3>
-				<p className="section-description">Choose which pollutants you want to receive alerts for and at what severity level</p>
-
-				<div className="pollutant-subscriptions">
-					{pollutants.map((pollutant) => (
-						<div key={pollutant.id} className="pollutant-item">
-							<label className="pollutant-toggle">
-								<input type="checkbox" checked={isSubscribed(pollutant.id)} onChange={() => handleSubscriptionToggle(pollutant.id)} />
-								<span className="pollutant-name">
-									{pollutant.name}
-									{pollutant.unit && <small>({pollutant.unit})</small>}
-								</span>
-							</label>
-
-							{isSubscribed(pollutant.id) && (
-								<div className="severity-selector">
-									<label>Alert me when level is:</label>
-									<select value={getMinSeverity(pollutant.id)} onChange={(e) => handleMinSeverityChange(pollutant.id, e.target.value)}>
-										<option value="1">Moderate or worse</option>
-										<option value="2">Unhealthy for Sensitive Groups or worse</option>
-										<option value="3">Unhealthy or worse</option>
-										<option value="4">Very Unhealthy or worse</option>
-										<option value="5">Hazardous only</option>
-									</select>
-								</div>
-							)}
-						</div>
-					))}
-				</div>
-			</div>
-
-			<div className="preferences-section">
-				<h3>Health Profile</h3>
-				<p className="section-description">Tell us about your health conditions to get personalized recommendations</p>
-
-				<div className="health-conditions">
-					{healthConditions.map((condition) => (
-						<label key={condition.id} className="health-condition">
-							<input type="checkbox" checked={hasHealthCondition(condition.id)} onChange={() => handleHealthConditionToggle(condition.id)} />
-							<span>{condition.name}</span>
-						</label>
-					))}
-
-					<div className="age-category">
-						<label>Age Category:</label>
-						<select value={getCurrentAgeCategory()} onChange={(e) => handleAgeCategoryChange(e.target.value)}>
-							{ageCategories.map((category) => (
-								<option key={category.value} value={category.value}>
-									{category.label}
-								</option>
-							))}
-						</select>
-					</div>
-				</div>
 			</div>
 
 			<div className="preferences-actions">
