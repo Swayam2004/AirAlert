@@ -1,0 +1,234 @@
+/**
+ * Improved layout specifically for the AQI summary section
+ */
+
+/* AQI Overview Panel Improvements */
+.aqi-overview {
+	display: flex;
+	flex-direction: column;
+	background: var(--card-bg);
+	border-radius: var(--border-radius);
+	box-shadow: var(--box-shadow);
+	padding: 1.5rem;
+	height: 100%;
+	justify-content: space-between; /* Better vertical spacing */
+}
+
+/* AQI Gauge Improvements */
+.aqi-gauge-container {
+	margin: 0 auto;
+	max-width: 320px; /* Slightly wider for better visibility */
+	padding: 0.75rem 0; /* Reduced padding to save space */
+}
+
+/* Better gauge labels alignment */
+.aqi-gauge-labels {
+	display: flex;
+	justify-content: space-between;
+	font-size: 0.75rem;
+	color: var(--muted-text-color);
+	margin-bottom: 0.75rem; /* Reduced spacing */
+	padding: 0 0.25rem;
+}
+
+/* Enhanced gauge value display */
+.aqi-gauge-value-container {
+	text-align: center;
+	margin-top: 0.75rem; /* Reduced spacing */
+}
+
+.aqi-gauge-value {
+	display: inline-flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding: 0.75rem 2rem; /* Reduced padding */
+	border-radius: var(--border-radius);
+	color: white;
+	min-width: 140px; /* Increased minimum width */
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.aqi-gauge-value:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.aqi-value {
+	display: block;
+	font-size: 2.75rem; /* Increased for better visibility */
+	font-weight: bold;
+	line-height: 1;
+	margin-bottom: 0.5rem;
+}
+
+.aqi-label {
+	font-size: 0.9rem; /* Slightly larger for better readability */
+	opacity: 0.95;
+	font-weight: 500;
+	text-transform: uppercase; /* More impactful */
+	letter-spacing: 0.5px;
+}
+
+/* Health tips section improvements */
+.health-tips {
+	border-top: 1px solid rgba(0, 0, 0, 0.1);
+	padding-top: 1.25rem; /* Reduced spacing */
+	margin-top: 1.25rem; /* Reduced spacing */
+}
+
+.health-tips h4 {
+	font-family: "Poppins", sans-serif;
+	font-weight: 600;
+	font-size: 1.1rem;
+	margin-bottom: 0.5rem; /* Reduced spacing */
+	color: var(--text-color);
+}
+
+.health-tips p {
+	font-size: 0.95rem;
+	color: var(--muted-text-color);
+	margin-bottom: 0;
+	line-height: 1.5;
+}
+
+/* Stats Container Improvements */
+.dashboard-summary .stats-container {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr); /* Default 2x2 grid */
+	grid-template-rows: repeat(2, 1fr);
+	gap: 1rem;
+	height: 100%;
+}
+
+.dashboard-summary .stat-card {
+	height: 100%; /* Fill the entire grid cell */
+	margin: 0;
+	padding: 1.5rem; /* Increased padding */
+	display: flex;
+	flex-direction: row; /* Horizontal alignment for more space */
+	align-items: center;
+	justify-content: flex-start;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-summary .stat-card:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Improve stat card content layout */
+.dashboard-summary .stat-icon {
+	font-size: 2rem;
+	margin-right: 1rem; /* Add proper spacing between icon and content */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 3rem;
+	height: 3rem;
+	background-color: rgba(52, 152, 219, 0.1);
+	border-radius: 50%;
+	transition: all 0.3s ease;
+}
+
+.dashboard-summary .stat-card:hover .stat-icon {
+	transform: scale(1.1);
+	background-color: rgba(52, 152, 219, 0.2);
+}
+
+.dashboard-summary .stat-content {
+	flex: 1;
+}
+
+.dashboard-summary .stat-content h3 {
+	font-size: 0.9rem;
+	margin-bottom: 0.25rem;
+	white-space: nowrap;
+	color: var(--muted-text-color);
+	font-weight: 600;
+}
+
+.dashboard-summary .stat-value {
+	font-size: 1.75rem;
+	line-height: 1.2;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	font-weight: bold;
+}
+
+.dashboard-summary .stat-unit {
+	font-size: 0.85rem;
+	margin-left: 0.25rem;
+	color: var(--muted-text-color);
+}
+
+.dashboard-summary .trend {
+	margin-left: 0.5rem;
+	padding: 0.15rem 0.35rem;
+	font-size: 0.75rem;
+	white-space: nowrap;
+	line-height: 1;
+	border-radius: 4px;
+}
+
+/* Enhanced responsive layout */
+@media (min-width: 1200px) {
+	.dashboard-summary .stats-container {
+		/* grid-template-columns: repeat(4, 1fr); Show all 4 cards in one row on large screens */
+		grid-template-rows: 1fr;
+	}
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+	.dashboard-summary .stats-container {
+		/* grid-template-columns: repeat(4, 1fr); Show all 4 cards in one row on medium-large screens */
+		grid-template-rows: 1fr;
+	}
+}
+
+@media (max-width: 991px) {
+	.dashboard-summary {
+		grid-template-columns: 1fr; /* Stack AQI overview and stats vertically */
+	}
+
+	.dashboard-summary .stats-container {
+		grid-template-columns: repeat(2, 1fr); /* 2x2 grid on medium screens */
+		grid-template-rows: repeat(2, 1fr);
+		margin-top: 1.5rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.dashboard-summary .stats-container {
+		grid-template-columns: repeat(2, 1fr); /* Maintain 2x2 grid on small screens */
+		gap: 1rem;
+	}
+
+	.dashboard-summary .stat-card {
+		padding: 1.25rem;
+	}
+
+	.dashboard-summary .stat-value {
+		font-size: 1.6rem; /* Slightly smaller text on smaller screens */
+	}
+
+	.dashboard-summary .stat-icon {
+		font-size: 1.75rem;
+		min-width: 2.75rem;
+		height: 2.75rem;
+	}
+}
+
+@media (max-width: 576px) {
+	.dashboard-summary .stats-container {
+		grid-template-columns: 1fr; /* Stack vertically on very small screens */
+	}
+
+	.dashboard-summary .stat-card {
+		height: auto;
+		padding: 1.25rem;
+		margin-bottom: 0.5rem;
+	}
+}

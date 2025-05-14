@@ -1,0 +1,168 @@
+/**
+ * Enhanced stat cards styling for the dashboard
+ */
+
+/* Stat Card Enhancements */
+.stat-card {
+	background: var(--card-bg);
+	padding: 1.5rem; /* Increased padding for more breathing room */
+	border-radius: var(--border-radius);
+	box-shadow: var(--box-shadow);
+	display: flex;
+	align-items: center;
+	transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+	height: 100%;
+	position: relative; /* For potential decorative elements */
+	overflow: hidden; /* For any overflow effects */
+}
+
+.stat-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.stat-icon {
+	font-size: 2.25rem; /* Larger icon */
+	margin-right: 1.25rem; /* More spacing between icon and content */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 3.5rem;
+	height: 3.5rem;
+	background-color: rgba(52, 152, 219, 0.12);
+	border-radius: 50%;
+	transition: all 0.25s ease;
+}
+
+.stat-card:hover .stat-icon {
+	transform: scale(1.1);
+	background-color: rgba(52, 152, 219, 0.18);
+}
+
+.stat-content {
+	flex: 1;
+}
+
+.stat-content h3 {
+	font-size: 0.95rem; /* Slightly larger title */
+	color: var(--muted-text-color);
+	margin-bottom: 0.3rem;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+}
+
+.stat-value {
+	font-size: 1.75rem; /* Larger value for emphasis */
+	font-weight: bold;
+	display: flex;
+	align-items: baseline; /* Better alignment with unit */
+	flex-wrap: wrap;
+	line-height: 1.2;
+}
+
+.stat-unit {
+	font-size: 0.9rem;
+	font-weight: normal;
+	color: var(--muted-text-color);
+	margin-left: 0.3rem;
+}
+
+.trend {
+	font-size: 0.8rem;
+	margin-left: 0.6rem;
+	padding: 0.2rem 0.45rem;
+	border-radius: 4px;
+	display: inline-flex;
+	align-items: center;
+	font-weight: 500;
+}
+
+.trend.up {
+	background-color: rgba(46, 204, 113, 0.2);
+	color: var(--secondary-color);
+}
+
+.trend.down {
+	background-color: rgba(231, 76, 60, 0.2);
+	color: var(--accent-color);
+}
+
+.trend.neutral {
+	background-color: rgba(149, 165, 166, 0.2);
+	color: var(--muted-text-color);
+}
+
+/* Responsive stat card styling */
+@media (min-width: 1200px) {
+	/* Large desktop - 4 cards in a row */
+	.stats-container .stat-card {
+		padding: 1.5rem;
+	}
+
+	.stats-container .stat-value {
+		font-size: 1.85rem;
+	}
+}
+
+@media (max-width: 991px) {
+	/* Medium screens */
+	.stat-icon {
+		font-size: 2rem;
+		min-width: 3rem;
+		height: 3rem;
+		margin-right: 1rem;
+	}
+
+	.stat-value {
+		font-size: 1.6rem;
+	}
+
+	.stat-unit {
+		font-size: 0.85rem;
+	}
+
+	.trend {
+		font-size: 0.75rem;
+		padding: 0.15rem 0.35rem;
+	}
+}
+
+@media (max-width: 768px) {
+	/* Smaller screens */
+	.stat-card {
+		padding: 1.25rem;
+	}
+
+	.stat-icon {
+		font-size: 1.75rem;
+		min-width: 2.75rem;
+		height: 2.75rem;
+		margin-right: 0.875rem;
+	}
+
+	.stat-content h3 {
+		font-size: 0.85rem;
+	}
+
+	.stat-value {
+		font-size: 1.5rem;
+	}
+}
+
+@media (max-width: 480px) {
+	/* Very small screens */
+	.stat-card {
+		padding: 1rem;
+	}
+
+	.stat-icon {
+		font-size: 1.5rem;
+		min-width: 2.5rem;
+		height: 2.5rem;
+		margin-right: 0.75rem;
+	}
+
+	.stat-value {
+		font-size: 1.4rem;
+	}
+}

@@ -1,0 +1,141 @@
+/**
+ * Enhanced Prediction Widget Layout Styling
+ * To optimize the layout and appearance of the Forecast section
+ */
+
+/* Prediction widget container */
+.prediction-widget {
+	background-color: var(--card-bg);
+	border-radius: var(--border-radius);
+	padding: 1.5rem;
+	box-shadow: var(--box-shadow);
+	margin-bottom: 1.5rem;
+	width: 100%;
+}
+
+.prediction-widget h3 {
+	font-family: "Poppins", sans-serif;
+	font-weight: 600;
+	margin-bottom: 1.25rem;
+	color: var(--text-color);
+}
+
+/* Chart container improvements */
+.prediction-chart-container {
+	height: 350px;
+	margin-bottom: 1rem;
+}
+
+/* Prediction legend styling */
+.prediction-legend {
+	display: flex;
+	justify-content: center;
+	gap: 1.5rem;
+	margin-top: 1rem;
+}
+
+.prediction-legend-item {
+	display: flex;
+	align-items: center;
+	font-size: 0.9rem;
+	color: var(--muted-text-color);
+}
+
+.color-box {
+	width: 16px;
+	height: 16px;
+	margin-right: 0.5rem;
+	border-radius: 3px;
+}
+
+.color-box.prediction {
+	background-color: var(--primary-600, #3b82f6);
+}
+
+.color-box.uncertainty {
+	background-color: var(--primary-300, #93c5fd);
+}
+
+/* Prediction content layout */
+.prediction-content {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+/* Prediction explanation section styling */
+.prediction-explanation {
+	background-color: #f8fafc;
+	border-radius: var(--border-radius);
+	padding: 1.5rem;
+	margin-top: 1rem;
+	border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.prediction-explanation h4 {
+	font-family: "Poppins", sans-serif;
+	font-weight: 600;
+	margin-bottom: 0.75rem;
+	font-size: 1.1rem;
+}
+
+.prediction-explanation p {
+	color: var(--muted-text-color);
+	font-size: 0.95rem;
+	line-height: 1.6;
+	margin-bottom: 1rem;
+}
+
+/* Prediction tips styling */
+.prediction-tips {
+	margin-top: 1rem;
+	border-top: 1px solid rgba(0, 0, 0, 0.05);
+	padding-top: 1rem;
+}
+
+.prediction-tips h5 {
+	font-family: "Poppins", sans-serif;
+	font-weight: 600;
+	margin-bottom: 0.5rem;
+	font-size: 1rem;
+}
+
+.prediction-tips ul {
+	margin-left: 1.25rem;
+	color: var(--muted-text-color);
+	font-size: 0.95rem;
+}
+
+.prediction-tips li {
+	margin-bottom: 0.5rem;
+}
+
+/* Loading state styling */
+.prediction-loading {
+	text-align: center;
+	padding: 2rem;
+	color: var(--muted-text-color);
+	font-style: italic;
+}
+
+/* No data state styling */
+.no-data {
+	text-align: center;
+	padding: 2rem;
+	color: var(--muted-text-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.prediction-chart-container {
+		height: 300px;
+	}
+
+	.prediction-widget {
+		padding: 1.25rem;
+	}
+
+	.prediction-explanation {
+		padding: 1.25rem;
+	}
+}

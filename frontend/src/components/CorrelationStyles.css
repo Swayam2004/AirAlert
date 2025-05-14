@@ -1,0 +1,147 @@
+/**
+ * Enhanced Weather Correlation Layout Styling
+ * To optimize the layout and appearance of the Weather Impact section
+ */
+
+/* Correlation widget container */
+.correlation-widget {
+	background-color: var(--card-bg);
+	border-radius: var(--border-radius);
+	padding: 1.5rem;
+	box-shadow: var(--box-shadow);
+	width: 100%;
+	margin-bottom: 1.5rem;
+}
+
+.correlation-widget h3 {
+	font-family: "Poppins", sans-serif;
+	font-weight: 600;
+	margin-bottom: 1.25rem;
+	color: var(--text-color);
+}
+
+/* Correlation grid layout */
+.correlation-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 1.25rem;
+	margin-bottom: 1.5rem;
+}
+
+.correlation-item {
+	background-color: #f8fafc;
+	border-radius: var(--border-radius);
+	padding: 1.25rem;
+	display: flex;
+	flex-direction: column;
+	border: 1px solid rgba(0, 0, 0, 0.05);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.correlation-item:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+.correlation-label {
+	display: flex;
+	align-items: center;
+	margin-bottom: 0.75rem;
+}
+
+.correlation-icon {
+	font-size: 1.5rem;
+	margin-right: 0.75rem;
+}
+
+.correlation-name {
+	font-weight: 600;
+}
+
+.correlation-value {
+	font-size: 1.25rem;
+	font-weight: bold;
+	display: flex;
+	align-items: center;
+}
+
+/* Correlation strength indicators */
+.correlation-value span {
+	margin-left: 0.5rem;
+	font-size: 0.85rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+	font-weight: 500;
+}
+
+.correlation-value.strong span {
+	background-color: rgba(46, 204, 113, 0.2);
+	color: #27ae60;
+}
+
+.correlation-value.moderate span {
+	background-color: rgba(52, 152, 219, 0.2);
+	color: #2980b9;
+}
+
+.correlation-value.weak span {
+	background-color: rgba(241, 196, 15, 0.2);
+	color: #f39c12;
+}
+
+.correlation-value.negligible span {
+	background-color: rgba(149, 165, 166, 0.2);
+	color: #7f8c8d;
+}
+
+/* Correlation explanation section */
+.correlation-explanation {
+	background-color: #f8fafc;
+	border-radius: var(--border-radius);
+	padding: 1.5rem;
+	margin-top: 1rem;
+	border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.correlation-explanation h4 {
+	font-family: "Poppins", sans-serif;
+	font-weight: 600;
+	margin-bottom: 0.75rem;
+	font-size: 1.1rem;
+}
+
+.correlation-explanation p {
+	color: var(--muted-text-color);
+	font-size: 0.95rem;
+	line-height: 1.6;
+}
+
+/* Loading state styling */
+.correlation-loading {
+	text-align: center;
+	padding: 2rem;
+	color: var(--muted-text-color);
+	font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+	.correlation-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (max-width: 768px) {
+	.correlation-grid {
+		grid-template-columns: 1fr;
+		gap: 1rem;
+	}
+
+	.correlation-widget {
+		padding: 1.25rem;
+	}
+
+	.correlation-explanation {
+		padding: 1.25rem;
+	}
+}

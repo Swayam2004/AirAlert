@@ -2,7 +2,16 @@ import React, { useState, useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
 import { Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from "recharts";
 import API from "../services/api";
-import "./Dashboard.css";
+import "./DashboardNew.css";
+import "./DashboardLayout.css"; // Import custom layout improvements
+import "./AQISummaryLayout.css"; // Import AQI summary section improvements
+import "./StatCardLayout.css"; // Import enhanced stat card styles
+import "./AQIGaugeStyles.css"; // Import AQI gauge enhancements
+import "./WeatherWidgetStyles.css"; // Import weather widget improvements
+import "./AlertsLayoutStyles.css"; // Import alerts section improvements
+import "./PredictionStyles.css"; // Import prediction widget improvements
+import "./CorrelationStyles.css"; // Import correlation widget improvements
+import "./InsightsStyles.css"; // Import LLM insights widget improvements
 
 // Mini-components for the dashboard
 const StatCard = ({ title, value, unit, icon, trend, className }) => (

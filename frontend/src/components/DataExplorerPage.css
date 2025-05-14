@@ -1,71 +1,85 @@
+/* 
+ * Data Explorer Page Styles
+ * Following AirAlert Design System 
+ */
+
 .data-explorer {
-	padding: 2rem;
-	background-color: var(--background-color, #f5f6fa);
-	color: var(--text-color, #333);
+	padding: var(--space-5);
+	background-color: var(--bg-primary);
+	color: var(--text-primary);
 	min-height: calc(100vh - 80px);
-	max-width: 1200px;
+	max-width: var(--container-xl);
 	margin: 0 auto;
 }
 
 .data-explorer h1 {
-	margin-bottom: 1.5rem;
-	color: var(--primary-color, #3498db);
+	margin-bottom: var(--space-5);
+	color: var(--primary-600);
+	font-family: var(--font-family-heading);
+	font-weight: var(--font-weight-semibold);
+	font-size: var(--font-size-3xl);
 }
 
 .data-explorer h2 {
-	font-size: 1.5rem;
-	margin-bottom: 1rem;
-	color: var(--text-color, #333);
+	font-size: var(--font-size-xl);
+	margin-bottom: var(--space-4);
+	color: var(--text-primary);
+	font-weight: var(--font-weight-semibold);
 }
 
+/* Tabs Navigation */
 .data-explorer-tabs {
 	display: flex;
-	gap: 0.5rem;
-	margin-bottom: 2rem;
-	border-bottom: 1px solid #e0e0e0;
-	padding-bottom: 1rem;
+	gap: var(--space-2);
+	margin-bottom: var(--space-6);
+	border-bottom: 1px solid var(--border-muted);
+	padding-bottom: var(--space-1);
+	overflow-x: auto;
+	scrollbar-width: thin;
 }
 
 .data-explorer-tabs button {
 	background: transparent;
 	border: none;
-	padding: 0.75rem 1.5rem;
-	font-size: 1rem;
-	font-weight: 500;
-	color: var(--muted-text-color, #777);
+	padding: var(--space-3) var(--space-4);
+	font-size: var(--font-size-md);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-secondary);
 	cursor: pointer;
-	transition: all 0.3s ease;
-	border-radius: var(--border-radius, 8px) var(--border-radius, 8px) 0 0;
+	transition: all var(--transition-fast);
+	border-radius: var(--radius-md) var(--radius-md) 0 0;
+	white-space: nowrap;
 }
 
 .data-explorer-tabs button:hover {
-	color: var(--primary-color, #3498db);
-	background-color: rgba(52, 152, 219, 0.05);
+	color: var(--primary-600);
+	background-color: var(--primary-50);
 }
 
 .data-explorer-tabs button.active {
-	color: var(--primary-color, #3498db);
-	border-bottom: 3px solid var(--primary-color, #3498db);
-	font-weight: 600;
+	color: var(--primary-600);
+	border-bottom: 3px solid var(--primary-600);
+	font-weight: var(--font-weight-semibold);
 }
 
+/* Filters Section */
 .filters-container {
-	background: var(--card-bg, #ffffff);
-	border-radius: var(--border-radius, 8px);
-	padding: 1.5rem;
-	margin-bottom: 2rem;
-	box-shadow: var(--box-shadow, 0 4px 6px rgba(0, 0, 0, 0.1));
+	background: var(--bg-secondary);
+	border-radius: var(--radius-lg);
+	padding: var(--space-5);
+	margin-bottom: var(--space-5);
+	box-shadow: var(--elevation-2);
 }
 
 .filters {
 	display: flex;
 	flex-direction: column;
-	gap: 1.5rem;
+	gap: var(--space-4);
 }
 
 .filter-row {
 	display: flex;
-	gap: 1.5rem;
+	gap: var(--space-4);
 	flex-wrap: wrap;
 }
 
