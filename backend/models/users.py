@@ -5,6 +5,7 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, Text, 
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 from datetime import datetime
+import json
 import enum
 
 from .database import Base
@@ -135,3 +136,36 @@ class WebPushSubscription(Base):
     
     def __repr__(self):
         return f"<WebPushSubscription(id={self.id}, user={self.user_id})>"
+
+class NotificationPreference(Base):
+    """User's preferences for notification types and sensitivity."""
+    
+    __tablename__ = "notification_preferences"
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    sensitivity_level = Column(Integer, default=1)  # 1 (low), 2 (medium), 3 (high)
+    _preferred_pollutants = Column(Text, name="preferred_pollutants", default='["pm25", "pm10", "o3", "no2"]')
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    
+    # Relationship
+    user = relationship("User")
+    
+    @property
+    def preferred_pollutants(self):
+        """Get the preferred pollutants as a list."""
+        if self._preferred_pollutants:
+            return json.loads(self._preferred_pollutants)
+        return []
+        
+    @preferred_pollutants.setter
+    def preferred_pollutants(self, value):
+        """Store the preferred pollutants as a JSON string."""
+        if value is None:
+            self._preferred_pollutants = None
+        else:
+            self._preferred_pollutants = json.dumps(value)
+    
+    def __repr__(self):
+        return f"<NotificationPreference(user={self.user_id}, sensitivity={self.sensitivity_level})>"

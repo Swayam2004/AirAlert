@@ -59,3 +59,23 @@ class Notification(Base):
     
     def __repr__(self):
         return f"<Notification(id={self.id}, alert={self.alert_id}, user={self.user_id})>"
+
+
+class AlertThreshold(Base):
+    """User-specific alert thresholds for different pollutants."""
+    
+    __tablename__ = "alert_thresholds"
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    pollutant = Column(String, nullable=False)  # e.g., 'PM2.5', 'CO', 'O3', etc.
+    threshold = Column(Float, nullable=False)  # Value that triggers an alert for this user
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    is_active = Column(Boolean, default=True)
+    
+    # Relationships
+    user = relationship("User", back_populates="alert_thresholds")
+    
+    def __repr__(self):
+        return f"<AlertThreshold(id={self.id}, user={self.user_id}, pollutant='{self.pollutant}', threshold={self.threshold})>"

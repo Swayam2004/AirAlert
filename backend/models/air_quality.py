@@ -136,3 +136,22 @@ class WeatherData(Base):
 
     def __repr__(self):
         return f"<WeatherData(id={self.id}, timestamp={self.timestamp}, station_id={self.station_id})>"
+
+class AirQuality(Base):
+    """Air quality data model for storing aggregated air quality information."""
+    
+    __tablename__ = "air_quality"
+    
+    id = Column(Integer, primary_key=True)
+    station_id = Column(Integer, ForeignKey("monitoring_stations.id"), nullable=False)
+    date = Column(DateTime, nullable=False)
+    pollutant = Column(String, nullable=False)
+    value = Column(Float, nullable=False)
+    unit = Column(String, nullable=True)
+    aqi_category = Column(String, nullable=True)  # Good, Moderate, Unhealthy, etc.
+    
+    # Relationship
+    station = relationship("MonitoringStation")
+    
+    def __repr__(self):
+        return f"<AirQuality(id={self.id}, station_id={self.station_id}, date={self.date}, pollutant={self.pollutant})>"

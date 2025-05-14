@@ -487,3 +487,78 @@ class NotificationManager:
         """Send a web notification."""
         # Example: Implement logic to send web notifications
         pass
+
+
+async def send_email(to_email: str, subject: str, body: str, html_body: Optional[str] = None, from_email: Optional[str] = None, from_name: Optional[str] = None) -> bool:
+    """
+    Send an email to a recipient.
+    
+    Args:
+        to_email: Email address of the recipient
+        subject: Subject line of the email
+        body: Plain text body of the email
+        html_body: HTML version of the email body (optional)
+        from_email: Sender's email address (optional)
+        from_name: Sender's display name (optional)
+        
+    Returns:
+        True if email was sent successfully, False otherwise
+    """
+    try:
+        # Load environment variables for email config
+        import os
+        from dotenv import load_dotenv
+        
+        load_dotenv()
+        
+        host = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+        port = int(os.getenv("EMAIL_PORT", 587))
+        username = os.getenv("EMAIL_USERNAME", "")
+        password = os.getenv("EMAIL_PASSWORD", "")
+        
+        if not from_email:
+            from_email = username
+            
+        if not from_name:
+            from_name = "AirAlert"
+            
+        # Set up email message
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = f"{from_name} <{from_email}>"
+        msg['To'] = to_email
+        
+        # Add plain text part
+        text_part = MIMEText(body, 'plain')
+        msg.attach(text_part)
+        
+        # Add HTML part if provided
+        if html_body:
+            html_part = MIMEText(html_body, 'html')
+            msg.attach(html_part)
+        
+        # Send email
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None,
+            lambda: _send_email_sync(host, port, username, password, from_email, to_email, msg)
+        )
+    except Exception as e:
+        logging.error(f"Failed to send email: {str(e)}")
+        return False
+        
+def _send_email_sync(host, port, username, password, from_email, to_email, msg):
+    """Helper function to send email synchronously for use with run_in_executor."""
+    try:
+        with smtplib.SMTP(host, port) as server:
+            server.ehlo()
+            server.starttls()
+            
+            if username and password:
+                server.login(username, password)
+                
+            server.sendmail(from_email, [to_email], msg.as_string())
+            return True
+    except Exception as e:
+        logging.error(f"SMTP server error: {str(e)}")
+        return False

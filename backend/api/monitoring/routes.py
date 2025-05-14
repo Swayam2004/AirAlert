@@ -276,13 +276,13 @@ async def get_station_latest_reading(
     return response
 
 
-@router.get("/stations/{station_id}/data")
+@router.get("/stations/{station_id}/data", response_model=None)
 def get_station_data(
     station_id: int,
     start_date: Optional[date] = Query(None, description="Start date for filtering data"),
     end_date: Optional[date] = Query(None, description="End date for filtering data"),
     pollutant: Optional[str] = Query(None, description="Pollutant type to filter (e.g., PM2.5, O3)"),
-    db: Session = get_db()
+    db: Session = Depends(get_db)
 ):
     """Fetch detailed air quality data for a specific station."""
     query = db.query(AirQuality).filter(AirQuality.station_id == station_id)
