@@ -11,6 +11,33 @@ const API = {
 
 	fetchData: () => axios.post("/api/fetch_data"),
 
+	// LLM-Powered Insights and Predictions
+	getLlmInsights: (stationId, timeframe = "24h") =>
+		axios.get("/api/insights", {
+			params: {
+				station_id: stationId,
+				timeframe,
+			},
+		}),
+
+	getPredictions: (stationId, pollutant, hours = 24) =>
+		axios.get("/api/predictions", {
+			params: {
+				station_id: stationId,
+				pollutant,
+				hours,
+			},
+		}),
+
+	getWeatherCorrelation: (stationId, pollutant, timeframe = "7d") =>
+		axios.get("/api/weather/correlation", {
+			params: {
+				station_id: stationId,
+				pollutant,
+				timeframe,
+			},
+		}),
+
 	// Alert Management Endpoints
 	checkAlerts: (pollutant) => axios.post("/api/check_alerts", { pollutant }),
 
