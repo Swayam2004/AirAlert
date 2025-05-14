@@ -8,7 +8,7 @@ import "./App.css";
 // Import only used components
 import HomePage from "./components/HomePage";
 import HowToOperate from "./components/HowToOperate";
-import MonitoringDashboard from "./components/MonitoringDashboard";
+import Dashboard from "./components/DashboardNew";
 import ProfilesPage from "./components/ProfilesPage";
 import AlertsPage from "./components/AlertsPage";
 import AdminPanel from "./components/AdminPanel";
@@ -16,15 +16,21 @@ import LoginPage from "./components/LoginPage";
 import SignupPage from "./components/SignupPage";
 import AboutUsPage from "./components/AboutUsPage";
 import ContactUsPage from "./components/ContactUsPage";
+import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
+import StationsPage from "./components/StationsPage";
+import DataExplorerPage from "./components/DataExplorerPage";
+import DocumentationPage from "./components/DocumentationPage";
+import ApiReferencePage from "./components/ApiReferencePage";
 import AuthService from "./services/auth";
 import NotificationCenter from "./components/NotificationCenter";
 import UserSettings from "./components/UserSettings";
 
 // Configure axios defaults
-axios.defaults.baseURL = process.env.REACT_APP_API_URL || ""; // Use environment variable or default to current host
+axios.defaults.baseURL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000"; // Use environment variable or explicitly set the backend URL
 axios.defaults.headers.common["Content-Type"] = "application/json";
+axios.defaults.timeout = 10000; // Add a timeout to avoid hanging requests
 
-// Add authorization header to all requests if token exists
+// Add authorization header and error handling to all requests
 axios.interceptors.request.use((config) => {
 	const token = localStorage.getItem("token");
 	if (token) {
@@ -32,6 +38,18 @@ axios.interceptors.request.use((config) => {
 	}
 	return config;
 });
+
+// Add response interceptor for better error handling
+axios.interceptors.response.use(
+	(response) => response,
+	(error) => {
+		// Handle CORS errors more gracefully
+		if (error.message === "Network Error") {
+			console.warn("Network error detected. This might be due to CORS or API server being offline.");
+		}
+		return Promise.reject(error);
+	}
+);
 
 // Navigation component with active state
 const Navigation = () => {
@@ -53,7 +71,7 @@ const Navigation = () => {
 				</button>
 
 				<div className={`nav-links ${isMobileNavOpen ? "nav-open" : ""}`}>
-					<Link to="/" className={`nav-link ${location.pathname === "/" ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
+					<Link to="/dashboard" className={`nav-link ${location.pathname === "/dashboard" ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
 						Dashboard
 					</Link>
 					<Link to="/stations" className={`nav-link ${location.pathname.includes("/stations") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
@@ -83,7 +101,7 @@ const Footer = () => (
 					<h4>Navigation</h4>
 					<ul>
 						<li>
-							<Link to="/">Dashboard</Link>
+							<Link to="/dashboard">Dashboard</Link>
 						</li>
 						<li>
 							<Link to="/stations">Monitoring Stations</Link>
@@ -173,10 +191,11 @@ function App() {
 		return () => clearInterval(intervalId);
 	}, []);
 
-	const handleLogin = (userData) => {
-		setIsAuthenticated(true);
-		setUser(userData);
-	};
+	// Commenting out unused function
+	// const handleLogin = (userData) => {
+	// 	setIsAuthenticated(true);
+	// 	setUser(userData);
+	// };
 
 	const handleLogout = async () => {
 		try {
@@ -242,7 +261,7 @@ function App() {
 					<Routes>
 						<Route path="/" element={<HomePage />} />
 						<Route path="/how-to-operate" element={<HowToOperate />} />
-						<Route path="/dashboard" element={<MonitoringDashboard />} />
+						<Route path="/dashboard" element={<Dashboard />} />
 						<Route path="/profile" element={<ProfilesPage />} />
 						<Route path="/alerts" element={<AlertsPage />} />
 						<Route path="/admin" element={<AdminPanel />} />
@@ -250,6 +269,11 @@ function App() {
 						<Route path="/signup" element={<SignupPage />} />
 						<Route path="/about-us" element={<AboutUsPage />} />
 						<Route path="/contact-us" element={<ContactUsPage />} />
+						<Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+						<Route path="/stations" element={<StationsPage />} />
+						<Route path="/data-explorer" element={<DataExplorerPage />} />
+						<Route path="/documentation" element={<DocumentationPage />} />
+						<Route path="/api-reference" element={<ApiReferencePage />} />
 					</Routes>
 				</main>
 
