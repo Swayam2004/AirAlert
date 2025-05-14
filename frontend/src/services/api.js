@@ -88,6 +88,16 @@ const API = {
 				timestamp,
 			},
 		}),
+
+	// Authentication Endpoints
+	login: (email, password) => axios.post("/api/token", { email, password }),
+
+	register: (name, email, password) => axios.post("/api/register", { name, email, password }),
+
+	// User Management
+	getUserProfile: (userId) => axios.get(`/api/users/${userId}`),
+
+	updateUserProfile: (userId, data) => axios.put(`/api/users/${userId}`, data),
 };
 
 // Helper functions for working with the API

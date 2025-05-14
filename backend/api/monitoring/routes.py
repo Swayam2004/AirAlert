@@ -3,16 +3,17 @@ Routes for monitoring stations and air quality data.
 """
 import logging
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from ..config import settings
 from ..dependencies import parse_date_flexible, get_valid_pollutants
 from ...models.database import get_db
-from ...models.air_quality import MonitoringStation, PollutantReading, WeatherData
+from ...models.air_quality import MonitoringStation, PollutantReading, WeatherData, AirQuality
 
 # Set up logging
 logger = logging.getLogger("airalert.api.monitoring")
@@ -273,3 +274,25 @@ async def get_station_latest_reading(
         }
     
     return response
+
+
+@router.get("/stations/{station_id}/data")
+def get_station_data(
+    station_id: int,
+    start_date: Optional[date] = Query(None, description="Start date for filtering data"),
+    end_date: Optional[date] = Query(None, description="End date for filtering data"),
+    pollutant: Optional[str] = Query(None, description="Pollutant type to filter (e.g., PM2.5, O3)"),
+    db: Session = get_db()
+):
+    """Fetch detailed air quality data for a specific station."""
+    query = db.query(AirQuality).filter(AirQuality.station_id == station_id)
+
+    if start_date:
+        query = query.filter(AirQuality.date >= start_date)
+    if end_date:
+        query = query.filter(AirQuality.date <= end_date)
+    if pollutant:
+        query = query.filter(AirQuality.pollutant == pollutant)
+
+    data = query.all()
+    return {"station_id": station_id, "data": data}

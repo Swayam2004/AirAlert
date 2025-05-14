@@ -428,3 +428,34 @@ async def process_notifications_task(alert_id: Optional[int] = None):
         except Exception as e:
             logger.error(f"Error processing notifications: {str(e)}", exc_info=True)
             return {"success": False, "error": str(e)}
+
+
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from ...models.alerts import AlertThreshold
+
+class AlertThresholdRequest(BaseModel):
+    user_id: int
+    pollutant: str
+    threshold: float
+
+@router.post("/configure-threshold")
+def configure_alert_threshold(request: AlertThresholdRequest, db: Session = Depends(get_db)):
+    """Configure alert thresholds for a user."""
+    existing_threshold = db.query(AlertThreshold).filter(
+        AlertThreshold.user_id == request.user_id,
+        AlertThreshold.pollutant == request.pollutant
+    ).first()
+
+    if existing_threshold:
+        existing_threshold.threshold = request.threshold
+    else:
+        new_threshold = AlertThreshold(
+            user_id=request.user_id,
+            pollutant=request.pollutant,
+            threshold=request.threshold
+        )
+        db.add(new_threshold)
+
+    db.commit()
+    return {"message": "Alert threshold configured successfully."}
