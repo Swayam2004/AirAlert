@@ -15,7 +15,12 @@ class Settings(BaseSettings):
         "default_alert": "Air quality alert: {pollutant} levels are {severity} in your area. Current value: {current_value}. Take necessary precautions."
     }
     # CORS settings
-    cors_origins: list = ["http://localhost:8001", "http://127.0.0.1:8001"]
+    cors_origins: list = [
+        "http://localhost:8001",
+        "http://127.0.0.1:8001",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ]
     
     # JWT settings
     jwt_secret_key: str = os.environ.get("JWT_SECRET_KEY", "")
