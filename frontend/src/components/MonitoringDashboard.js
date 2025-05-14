@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getMonitoringStations } from "../services/api";
+import API from "../services/api";
 import HeroSection from "./HeroSection";
 import StatCard from "./StatCard";
 import "../styles/index.css";
@@ -12,7 +12,7 @@ function MonitoringDashboard() {
 	useEffect(() => {
 		const fetchStations = async () => {
 			try {
-				const response = await getMonitoringStations();
+				const response = await API.getMonitoringStations();
 				setStations(response.data);
 				setLoading(false);
 			} catch (err) {

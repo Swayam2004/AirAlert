@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "../styles/designSystem.css";
-import "./MonitoringStations.css";
+import "../styles/index.css";
 
 const MonitoringStations = () => {
 	const [stations, setStations] = useState([]);

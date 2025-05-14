@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Circle, Popup } from "react-leaflet";
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from "recharts";
+import { Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from "recharts";
 import API from "../services/api";
 
 // Mini-components for the dashboard
@@ -92,7 +92,6 @@ const WeatherWidget = ({ temperature, humidity, windSpeed, pressure }) => (
 function Dashboard() {
 	const [airQuality, setAirQuality] = useState(null);
 	const [alerts, setAlerts] = useState([]);
-	const [pollutantChartData, setPollutantChartData] = useState([]);
 	const [trendData, setTrendData] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
@@ -112,19 +111,6 @@ function Dashboard() {
 
 				if (airQualityResponse.data && airQualityResponse.data.readings && airQualityResponse.data.readings.length > 0) {
 					setAirQuality(airQualityResponse.data.readings[0]);
-
-					// Generate chart data from the latest reading
-					const reading = airQualityResponse.data.readings[0];
-					const chartData = [
-						{ name: "PM2.5", value: reading.pm25, threshold: 35 },
-						{ name: "PM10", value: reading.pm10, threshold: 150 },
-						{ name: "O3", value: reading.o3, threshold: 70 },
-						{ name: "NO2", value: reading.no2, threshold: 100 },
-						{ name: "SO2", value: reading.so2, threshold: 75 },
-						{ name: "CO", value: reading.co, threshold: 9 },
-					].filter((item) => item.value !== null);
-
-					setPollutantChartData(chartData);
 
 					// Set health tips based on AQI
 					setHealthTips(getHealthTips(reading.aqi));
@@ -570,7 +556,7 @@ function Dashboard() {
 				.health-tips h4 {
 					margin-bottom: var(--space-2);
 					color: var(--text-secondary);
-					font-weight: var(--font-weight-medium);
+					font-weight: var (--font-weight-medium);
 				}
 
 				.health-tips p {
@@ -823,7 +809,7 @@ function Dashboard() {
 					padding: var(--space-4);
 					text-align: center;
 					background-color: var(--neutral-50);
-					border-radius: var(--radius-md);
+					border-radius: var (--radius-md);
 					color: var(--text-tertiary);
 				}
 

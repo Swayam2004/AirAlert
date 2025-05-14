@@ -5,18 +5,7 @@ import "leaflet/dist/leaflet.css";
 import "./styles/designSystem.css";
 import "./App.css";
 
-// Import components
-import Dashboard from "./components/Dashboard";
-import PollutantTrends from "./components/PollutantTrends";
-import AlertVisualization from "./components/AlertVisualization";
-import MonitoringStations from "./components/MonitoringStations";
-import UserProfile from "./components/UserProfile";
-import APIStatus from "./components/APIStatus";
-import NotificationCenter from "./components/NotificationCenter";
-import UserSettings from "./components/UserSettings";
-import DataExplorer from "./components/DataExplorer";
-import Login from "./components/Login";
-import AuthService from "./services/auth";
+// Import only used components
 import HomePage from "./components/HomePage";
 import HowToOperate from "./components/HowToOperate";
 import MonitoringDashboard from "./components/MonitoringDashboard";
@@ -106,13 +95,13 @@ const Footer = () => (
 					<h4>Resources</h4>
 					<ul>
 						<li>
-							<a href="#">Documentation</a>
+							<a href="/documentation">Documentation</a>
 						</li>
 						<li>
-							<a href="#">API Reference</a>
+							<a href="/api-reference">API Reference</a>
 						</li>
 						<li>
-							<a href="#">Privacy Policy</a>
+							<a href="/privacy-policy">Privacy Policy</a>
 						</li>
 					</ul>
 				</div>

@@ -90,7 +90,7 @@ const API = {
 		}),
 
 	// Authentication Endpoints
-	login: (email, password) => axios.post("/api/token", { email, password }),
+	// Removed duplicate login method
 
 	register: (name, email, password) => axios.post("/api/register", { name, email, password }),
 
@@ -200,4 +200,5 @@ const urlBase64ToUint8Array = (base64String) => {
 	return outputArray;
 };
 
+// Export the API object as default
 export default API;
