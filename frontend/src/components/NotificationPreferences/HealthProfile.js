@@ -1,44 +1,50 @@
 import React from "react";
+import { HEALTH_CONDITIONS, AGE_CATEGORIES } from "./constants";
 
 const HealthProfile = ({ healthProfile, onConditionToggle, onAgeCategoryChange }) => {
-	const healthConditions = [
-		{ id: "has_asthma", name: "Asthma" },
-		{ id: "has_copd", name: "COPD" },
-		{ id: "has_heart_disease", name: "Heart Disease" },
-		{ id: "has_diabetes", name: "Diabetes" },
-		{ id: "has_pregnancy", name: "Pregnancy" },
-	];
-	const ageCategories = [
-		{ value: "child", label: "Child (0-12 years)" },
-		{ value: "teen", label: "Teen (13-18 years)" },
-		{ value: "adult", label: "Adult (19-64 years)" },
-		{ value: "elderly", label: "Elderly (65+ years)" },
-	];
-
 	return (
 		<div className="preferences-section">
 			<h3>Health Profile</h3>
-			<p className="section-description">Tell us about your health conditions</p>
+			<p className="section-description">Tell us about your health conditions to receive personalized air quality recommendations</p>
+
 			<div className="health-conditions">
-				{healthConditions.map((condition) => (
-					<label key={condition.id} className="health-condition">
-						<input type="checkbox" checked={healthProfile?.[condition.id] || false} onChange={() => onConditionToggle(condition.id)} />
-						<span>{condition.name}</span>
-					</label>
-				))}
+				<h4>Medical Conditions</h4>
+				<div className="conditions-grid">
+					{HEALTH_CONDITIONS.map((condition) => (
+						<label key={condition.id} className={`health-condition-card ${healthProfile?.[condition.id] ? "selected" : ""}`}>
+							<input type="checkbox" checked={healthProfile?.[condition.id] || false} onChange={() => onConditionToggle(condition.id)} />
+							<span className="condition-icon">{getConditionIcon(condition.id)}</span>
+							<span className="condition-name">{condition.name}</span>
+						</label>
+					))}
+				</div>
+
 				<div className="age-category">
-					<label>Age Category:</label>
-					<select value={healthProfile?.age_category || "adult"} onChange={(e) => onAgeCategoryChange(e.target.value)}>
-						{ageCategories.map((category) => (
-							<option key={category.value} value={category.value}>
+					<h4>Age Category</h4>
+					<div className="age-selector">
+						{AGE_CATEGORIES.map((category) => (
+							<button key={category.value} type="button" className={`age-button ${healthProfile?.age_category === category.value ? "active" : ""}`} onClick={() => onAgeCategoryChange(category.value)}>
 								{category.label}
-							</option>
+							</button>
 						))}
-					</select>
+					</div>
 				</div>
 			</div>
 		</div>
 	);
+};
+
+// Helper function to get appropriate icon for each condition
+const getConditionIcon = (conditionId) => {
+	const icons = {
+		has_asthma: "🫁",
+		has_copd: "🫁",
+		has_heart_disease: "❤️",
+		has_diabetes: "💉",
+		has_pregnancy: "🤰",
+	};
+
+	return icons[conditionId] || "🏥";
 };
 
 export default HealthProfile;
