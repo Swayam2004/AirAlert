@@ -2,7 +2,7 @@
 Configuration settings for the AirAlert API.
 """
 import os
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     """Application settings"""
@@ -31,9 +31,36 @@ class Settings(BaseSettings):
     # Frontend URL for links in emails
     frontend_url: str = os.environ.get("FRONTEND_URL", "http://localhost:3000")
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    # Host and port settings
+    host: str = os.environ.get("HOST", "127.0.0.1")
+    port: str = os.environ.get("PORT", "8000")
+    debug: str = os.environ.get("DEBUG", "False")
+    
+    # Database settings
+    database_url: str = os.environ.get("DATABASE_URL", "sqlite:///airalert.db")
+    postgres_user: str = os.environ.get("POSTGRES_USER", "postgres")
+    postgres_password: str = os.environ.get("POSTGRES_PASSWORD", "postgres")
+    postgres_db: str = os.environ.get("POSTGRES_DB", "airalert")
+    
+    # API keys
+    openaq_api_key: str = os.environ.get("OPENAQ_API_KEY", "")
+    mapbox_access_token: str = os.environ.get("MAPBOX_ACCESS_TOKEN", "")
+    
+    # GIS settings
+    cell_size: str = os.environ.get("CELL_SIZE", "0.01")
+    default_country: str = os.environ.get("DEFAULT_COUNTRY", "IN")
+    
+    # Email settings
+    email_host: str = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+    email_port: str = os.environ.get("EMAIL_PORT", "587")
+    email_username: str = os.environ.get("EMAIL_USERNAME", "")
+    email_password: str = os.environ.get("EMAIL_PASSWORD", "")
+    
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": False,
+        "extra": "allow"  # Allow extra fields
+    }
 
 # Create a global instance of settings
 settings = Settings()

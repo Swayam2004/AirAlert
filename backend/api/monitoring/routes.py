@@ -38,7 +38,7 @@ async def get_monitoring_stations(
     query = select(MonitoringStation).limit(limit).offset(offset)
     
     # Execute query
-    result = await db.execute(query)
+    result = db.execute(query)  # Remove await here
     stations = result.scalars().all()
 
     # Serialize response
@@ -136,8 +136,10 @@ async def get_air_quality(
     except Exception as e:
         logger.warning(f"Could not compile query to string: {str(e)}")
     
-    # Execute query
-    result = await db.execute(query.order_by(PollutantReading.timestamp.desc()).limit(1000))
+    # Execute query with proper synchronization handling
+    # Add limit and order to the query before execution
+    query = query.order_by(PollutantReading.timestamp.desc()).limit(1000)
+    result = db.execute(query)  # Remove await here
     readings_with_weather = result.all()
     logger.info(f"Query returned {len(readings_with_weather)} readings with weather data")
     
@@ -201,7 +203,7 @@ async def get_station_latest_reading(
     """
     # Check if station exists
     station_query = select(MonitoringStation).where(MonitoringStation.id == station_id)
-    result = await db.execute(station_query)
+    result = db.execute(station_query)  # Remove await
     station = result.scalar_one_or_none()
     
     if not station:
@@ -231,7 +233,7 @@ async def get_station_latest_reading(
         )
     )
     
-    result = await db.execute(query)
+    result = db.execute(query)  # Remove await
     row = result.first()
     
     if not row:
