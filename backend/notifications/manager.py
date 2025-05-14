@@ -14,10 +14,8 @@ from pydantic import BaseModel, Field
 from .base import NotificationSender, SMSNotificationSender, WebNotificationSender, EmailNotificationSender
 from ..models.alerts import Alert, Notification
 from ..models.users import User
-from .email import EmailSender
-
-from backend.notifications.email import send_email
-from backend.notifications.web_push import send_web_push
+from .email import EmailSender, send_email
+from .web_push import send_web_push
 from backend.models.database import get_db
 from sqlalchemy.orm import Session
 

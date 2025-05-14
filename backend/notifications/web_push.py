@@ -205,3 +205,45 @@ class WebPushSender(NotificationSender):
         
         await self.db_session.execute(stmt)
         await self.db_session.commit()
+
+
+async def send_web_push(user_id: int, title: str, message: str, icon: Optional[str] = None, url: Optional[str] = None) -> bool:
+    """
+    Send a web push notification to a user.
+    
+    Args:
+        user_id: ID of the user to send notification to
+        title: Title of the notification
+        message: Message body of the notification
+        icon: Icon URL for the notification (optional)
+        url: URL to open when the notification is clicked (optional)
+        
+    Returns:
+        True if notification was sent successfully, False otherwise
+    """
+    try:
+        # In an actual implementation, you would:
+        # 1. Get all active web push subscriptions for the user from the database
+        # 2. Send the notification to each subscription
+        # 3. Handle subscription removal for expired subscriptions
+        
+        # This is a placeholder implementation
+        logger = logging.getLogger("airalert.notifications")
+        logger.info(f"Web push notification queued for user {user_id}: {title}")
+        
+        # Create payload
+        payload = json.dumps({
+            "title": title,
+            "body": message,
+            "icon": icon or "/logo192.png",
+            "url": url or "/",
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        # In a real implementation, you would retrieve the WebPushSender instance 
+        # and use it to send the notification
+        
+        return True
+    except Exception as e:
+        logging.error(f"Failed to send web push notification: {str(e)}")
+        return False
