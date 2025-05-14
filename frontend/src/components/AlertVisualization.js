@@ -7,13 +7,13 @@ const { BaseLayer, Overlay } = LayersControl;
 // Severity color mapping
 const getSeverityColor = (level) => {
 	const colors = {
-		1: "#89CFF0", // Light blue
-		2: "#FFD700", // Gold
-		3: "#FFA500", // Orange
-		4: "#FF4500", // Red-Orange
-		5: "#FF0000", // Red
+		1: "#89CFF0",
+		2: "#FFD700",
+		3: "#FFA500",
+		4: "#FF4500",
+		5: "#FF0000",
 	};
-	return colors[level] || "#808080"; // Default to gray if level is undefined
+	return colors[level] || "#808080";
 };
 
 // Severity radius mapping (in meters)
