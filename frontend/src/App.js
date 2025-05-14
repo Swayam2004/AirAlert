@@ -16,6 +16,9 @@ import LoginPage from "./components/LoginPage";
 import SignupPage from "./components/SignupPage";
 import AboutUsPage from "./components/AboutUsPage";
 import ContactUsPage from "./components/ContactUsPage";
+import AuthService from "./services/auth";
+import NotificationCenter from "./components/NotificationCenter";
+import UserSettings from "./components/UserSettings";
 
 // Configure axios defaults
 axios.defaults.baseURL = process.env.REACT_APP_API_URL || ""; // Use environment variable or default to current host

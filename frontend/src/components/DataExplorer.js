@@ -44,7 +44,6 @@ function DataExplorer() {
 
 			const data = response.data;
 
-			// Process data for chart
 			const chartData = {
 				labels: data.map((item) => new Date(item.timestamp).toLocaleString()),
 				datasets: [

@@ -599,7 +599,7 @@ function Dashboard() {
 					margin: 0;
 					font-size: var(--font-size-sm);
 					font-weight: var(--font-weight-medium);
-					color: var(--text-tertiary);
+					color: var (--text-tertiary);
 				}
 
 				.stat-value {
@@ -876,15 +876,14 @@ function Dashboard() {
 }
 
 // Helper functions
-function getAQILevel(aqi) {
-	if (!aqi) return "unknown";
-	if (aqi <= 50) return "good";
-	if (aqi <= 100) return "moderate";
-	if (aqi <= 150) return "unhealthy-sensitive";
-	if (aqi <= 200) return "unhealthy";
-	if (aqi <= 300) return "very-unhealthy";
+const getAQILevel = (value) => {
+	if (value <= 50) return "good";
+	if (value <= 100) return "moderate";
+	if (value <= 150) return "unhealthy for sensitive groups";
+	if (value <= 200) return "unhealthy";
+	if (value <= 300) return "very unhealthy";
 	return "hazardous";
-}
+};
 
 function getLevelLabel(level) {
 	switch (level) {
