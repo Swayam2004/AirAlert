@@ -45,10 +45,10 @@ class MonitoringStation(Base):
         if self.location:
             try:
                 shape = to_shape(self.location)  # Convert WKB to Shapely geometry
-                logger.info(f"Extracting longitude from location: {shape}")
+                # logger.info(f"Extracting longitude from location: {shape}")
                 return shape.x
             except AttributeError as e:
-                logger.error(f"Error extracting longitude: {str(e)}")
+                # logger.error(f"Error extracting longitude: {str(e)}")
                 return None
         return None
     

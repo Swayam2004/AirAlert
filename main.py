@@ -6,7 +6,11 @@ import os
 import logging
 import asyncio
 import uvicorn
+import warnings
 from dotenv import load_dotenv
+
+# Filter out specific Pydantic warning about orm_mode
+warnings.filterwarnings("ignore", message="Valid config keys have changed in V2.*'orm_mode' has been renamed.*")
 
 # Set up logging
 logging.basicConfig(
