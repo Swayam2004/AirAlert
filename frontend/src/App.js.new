@@ -1,0 +1,141 @@
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import axios from "axios";
+import "leaflet/dist/leaflet.css";
+import "./styles/designSystem.css";
+import "./App.css";
+
+// Auth Context Provider
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+
+// Import authentication components
+import LoginPage from "./components/auth/LoginPage";
+import RegisterPage from "./components/auth/RegisterPage";
+import ForgotPasswordPage from "./components/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./components/auth/ResetPasswordPage";
+import EmailVerificationPage from "./components/auth/EmailVerificationPage";
+import EmailVerificationSentPage from "./components/auth/EmailVerificationSentPage";
+import UnauthorizedPage from "./components/common/UnauthorizedPage";
+
+// Import application components
+import Dashboard from "./components/DashboardNew";
+import ProfilesPage from "./components/ProfilesPage";
+import AlertsPage from "./components/AlertsPage";
+import AdminPanel from "./components/AdminPanel";
+import UserManagement from "./components/admin/UserManagement";
+import HomePage from "./components/HomePage";
+import HowToOperate from "./components/HowToOperate";
+import AboutUsPage from "./components/AboutUsPage";
+import ContactUsPage from "./components/ContactUsPage";
+import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
+import StationsPage from "./components/StationsPage";
+import AdvancedMonitoringDashboard from "./components/AdvancedMonitoringDashboard";
+import DataExplorerPage from "./components/DataExplorerPage";
+import DocumentationPage from "./components/DocumentationPage";
+import ApiReferencePage from "./components/ApiReferencePage";
+import NotificationCenter from "./components/NotificationCenter";
+import UserSettings from "./components/UserSettings";
+
+// Configure axios defaults
+axios.defaults.baseURL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+axios.defaults.headers.common["Content-Type"] = "application/json";
+axios.defaults.timeout = 10000; // Add a timeout to avoid hanging requests
+
+// App Component
+const App = () => {
+  return (
+    <AuthProvider>
+      <Router>
+        <div className="app">
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/how-to-operate" element={<HowToOperate />} />
+            <Route path="/about" element={<AboutUsPage />} />
+            <Route path="/contact" element={<ContactUsPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/documentation" element={<DocumentationPage />} />
+            <Route path="/api" element={<ApiReferencePage />} />
+            
+            {/* Authentication Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            <Route path="/verify-email/:token" element={<EmailVerificationPage />} />
+            <Route path="/verify-email-sent" element={<EmailVerificationSentPage />} />
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
+            
+            {/* Protected Routes - User Level */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <ProfilesPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/alerts" element={
+              <ProtectedRoute>
+                <AlertsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/stations" element={
+              <ProtectedRoute>
+                <StationsPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/advanced-monitoring" element={
+              <ProtectedRoute>
+                <AdvancedMonitoringDashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/data-explorer" element={
+              <ProtectedRoute>
+                <DataExplorerPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/notifications" element={
+              <ProtectedRoute>
+                <NotificationCenter />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <UserSettings />
+              </ProtectedRoute>
+            } />
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminPanel />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/admin/users" element={
+              <ProtectedRoute requiredRole="admin">
+                <UserManagement />
+              </ProtectedRoute>
+            } />
+            
+            {/* Default Route - Redirect to Home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
+  );
+};
+
+export default App;

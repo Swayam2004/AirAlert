@@ -15,10 +15,12 @@ warnings.filterwarnings("ignore", message="Valid config keys have changed in V2.
 
 # Set up logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("airalert")
+# Set SQLAlchemy logging to debug
+logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 # Load environment variables from the fixed file
 load_dotenv(dotenv_path=".env.fixed")

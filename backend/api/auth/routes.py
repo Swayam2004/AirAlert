@@ -72,7 +72,7 @@ async def send_verification_email(
     """
     
     # Create notification
-    await notification_manager.send_email_notification(
+    notification_manager.send_email_notification(  # Removed await 
         recipient_email=email,
         subject=subject,
         html_content=html_content,
@@ -110,7 +110,7 @@ async def send_password_reset_email(
     """
     
     # Create notification
-    await notification_manager.send_email_notification(
+    notification_manager.send_email_notification(  # Removed await
         recipient_email=email,
         subject=subject,
         html_content=html_content,
@@ -129,38 +129,50 @@ async def register_user(
     """
     Register a new user.
     """
-    # Check if username already exists
-    query = select(User).where(User.username == user_data.username)
-    result = await db.execute(query)
-    if result.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already registered"
-        )
-    
-    # Check if email already exists if provided
-    if user_data.email:
-        query = select(User).where(User.email == user_data.email)
-        result = await db.execute(query)
-        if result.scalar_one_or_none():
+    try:
+        # Check if username already exists
+        query = select(User).where(User.username == user_data.username)
+        result = db.execute(query)  # Removed await
+        user_exists = result.scalar_one_or_none()  # Changed from scalars().first()
+        if user_exists:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+                detail="Username already registered"
             )
-    
-    # Hash the password
-    hashed_password = get_password_hash(user_data.password)
-    
-    # Create new user
-    new_user = User(
-        username=user_data.username,
-        email=user_data.email,
-        name=user_data.name,
-        phone=user_data.phone if hasattr(user_data, 'phone') else None,
-        hashed_password=hashed_password,
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
-    )
+        
+        # Check if email already exists if provided
+        if user_data.email:
+            query = select(User).where(User.email == user_data.email)
+            result = db.execute(query)  # Removed await
+            email_exists = result.scalar_one_or_none()  # Changed from scalars().first()
+            if email_exists:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Email already registered"
+                )
+        
+        # Hash the password
+        hashed_password = get_password_hash(user_data.password)
+        
+        # Create new user
+        new_user = User(
+            username=user_data.username,
+            email=user_data.email,
+            name=user_data.name,
+            phone=user_data.phone,
+            hashed_password=hashed_password,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            is_verified=False,
+            failed_login_attempts=0,
+            role="user"
+        )
+    except Exception as e:
+        logger.exception(f"Error in user registration: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"User registration failed: {str(e)}"
+        )
     
     # Generate verification token if email provided
     if user_data.email:
@@ -170,8 +182,8 @@ async def register_user(
     
     # Save user to database
     db.add(new_user)
-    await db.commit()
-    await db.refresh(new_user)
+    db.commit()  # Removed await
+    db.refresh(new_user)  # Removed await
     
     # Send verification email in background if email provided
     if user_data.email and new_user.verification_token:
@@ -200,8 +212,8 @@ async def login(
     """
     # Get user from database
     query = select(User).where(User.username == form_data.username)
-    result = await db.execute(query)
-    user = result.scalar_one_or_none()
+    result = db.execute(query)  # Removed await
+    user = result.scalar_one_or_none()  # Changed from scalars().first()
     
     # Check if user exists and password is correct
     if not user or not verify_password(form_data.password, user.hashed_password):
@@ -213,7 +225,7 @@ async def login(
             if user.failed_login_attempts >= 5:
                 user.lock_until = datetime.utcnow() + timedelta(minutes=15)
                 
-            await db.commit()
+            db.commit()  # Removed await
             
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -242,7 +254,7 @@ async def login(
     # Reset failed login attempts on successful login
     user.failed_login_attempts = 0
     user.last_login = datetime.utcnow()
-    await db.commit()
+    db.commit()  # Removed await
     
     # Create access token payload
     token_data = {
@@ -279,8 +291,8 @@ async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
         (User.verification_token == token) & 
         (User.verification_token_expires > datetime.utcnow())
     )
-    result = await db.execute(query)
-    user = result.scalar_one_or_none()
+    result = db.execute(query)  # Removed await
+    user = result.scalar_one_or_none()  # Changed from scalars().one_or_none()
     
     # Check if token is valid
     if not user:
@@ -293,8 +305,8 @@ async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
     user.is_verified = True
     user.verification_token = None
     user.verification_token_expires = None
-    await db.commit()
-    await db.refresh(user)
+    db.commit()  # Removed await
+    db.refresh(user)  # Removed await
     
     return user
 
@@ -312,8 +324,8 @@ async def request_password_reset(
     """
     # Get user by email
     query = select(User).where(User.email == reset_request.email)
-    result = await db.execute(query)
-    user = result.scalar_one_or_none()
+    result = db.execute(query)  # Removed await
+    user = result.scalar_one_or_none()  # Changed from scalars().one_or_none()
     
     # Always return success even if user not found (security)
     if not user:
@@ -323,7 +335,7 @@ async def request_password_reset(
     token, expires = generate_password_reset_token()
     user.password_reset_token = token
     user.password_reset_expires = expires
-    await db.commit()
+    db.commit()  # Removed await
     
     # Send password reset email
     background_tasks.add_task(
@@ -352,8 +364,8 @@ async def reset_password(
         (User.password_reset_token == token) & 
         (User.password_reset_expires > datetime.utcnow())
     )
-    result = await db.execute(query)
-    user = result.scalar_one_or_none()
+    result = db.execute(query)  # Removed await
+    user = result.scalar_one_or_none()  # Changed from scalars().one_or_none()
     
     # Check if token is valid
     if not user:
@@ -371,7 +383,7 @@ async def reset_password(
     user.password_reset_expires = None
     user.failed_login_attempts = 0
     user.lock_until = None
-    await db.commit()
+    db.commit()  # Removed await
     
     return {"message": "Password has been successfully reset"}
 
@@ -434,8 +446,8 @@ async def refresh_access_token(
     
     # Get user from database
     query = select(User).where(User.username == username)
-    result = await db.execute(query)
-    user = result.scalar_one_or_none()
+    result = db.execute(query)  # Removed await
+    user = result.scalar_one_or_none()  # Changed from scalars().one_or_none()
     
     if not user or not user.is_active:
         raise credentials_exception
@@ -460,7 +472,7 @@ async def refresh_access_token(
     
     # Update last token refresh time
     user.last_token_refresh = datetime.utcnow()
-    await db.commit()
+    db.commit()  # Removed await
     
     return {
         "access_token": access_token,
@@ -473,8 +485,8 @@ async def refresh_access_token(
     """
     # Authenticate user
     query = select(User).where(User.username == form_data.username)
-    result = await db.execute(query)
-    user = result.scalar_one_or_none()
+    result = db.execute(query)  # Removed await
+    user = result.scalar_one_or_none()  # Changed from scalars().one_or_none()
     
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -519,7 +531,7 @@ async def verify_email(
     # Find user with this token
     query = select(User).where(User.verification_token == token)
     result = await db.execute(query)
-    user = result.scalar_one_or_none()
+    user = result.scalars().one_or_none()
     
     if not user:
         raise HTTPException(
@@ -543,8 +555,8 @@ async def verify_email(
         verification_token=None,
         verification_token_expires=None
     )
-    await db.execute(stmt)
-    await db.commit()
+    db.execute(stmt)  # Removed await
+    db.commit()  # Removed await
     
     return {"message": "Email verified successfully"}
 
@@ -560,7 +572,7 @@ async def request_verification_email(
     """
     # Find user
     query = select(User).where(User.username == username)
-    result = await db.execute(query)
+    result = db.execute(query)  # Removed await
     user = result.scalar_one_or_none()
     
     if not user or not user.email:
@@ -581,8 +593,8 @@ async def request_verification_email(
         verification_token=token,
         verification_token_expires=expires
     )
-    await db.execute(stmt)
-    await db.commit()
+    db.execute(stmt)  # Removed await
+    db.commit()  # Removed await
     
     # Send verification email
     background_tasks.add_task(

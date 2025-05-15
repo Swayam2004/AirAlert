@@ -41,8 +41,7 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.
-    cors_origins if hasattr(settings, "cors_origins") else ["*"],
+    allow_origins=["http://127.0.0.1:8001", "http://localhost:8001", "http://localhost:3000"],  # Added frontend origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,12 +64,19 @@ async def db_session_middleware(request, call_next):
                 status_code=500,
                 content={"detail": "Database query error. Please contact the administrator."},
             )
-        raise
-    except Exception as e:
-        logger.error(f"Request error: {str(e)}")
+        logger.exception(f"TypeError in request: {str(e)}")
         return JSONResponse(
             status_code=500,
-            content={"detail": str(e)},
+            content={"detail": str(e), "error_type": "TypeError"},
+        )
+    except Exception as e:
+        logger.exception(f"Request error: {str(e)}")
+        import traceback
+        stack_trace = traceback.format_exc()
+        logger.error(f"Stack trace: {stack_trace}")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": str(e), "stack_trace": stack_trace.split('\n')},
         )
 
 # Include routers with prefixes
