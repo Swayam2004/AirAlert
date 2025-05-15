@@ -236,7 +236,7 @@ const PollutionHeatmap = ({
 										<br />
 										{value !== null && value !== undefined ? (
 											<>
-												{pollutantSettings[selectedPollutant].label}: <strong>{value.toFixed(2)}</strong>
+												{pollutantSettings[selectedPollutant].label}: <strong>{typeof value === "number" ? value.toFixed(2) : value.toString()}</strong>
 												<br />
 												Status: <span style={{ color }}>{getSeverityText(value)}</span>
 											</>
@@ -251,7 +251,8 @@ const PollutionHeatmap = ({
 										<p>
 											Location: {station.city || "Unknown"}, {station.state || "Unknown"}
 											<br />
-											Coordinates: {station.latitude.toFixed(4)}, {station.longitude.toFixed(4)}
+											Coordinates: {typeof station.latitude === "number" ? station.latitude.toFixed(4) : station.latitude},{" "}
+											{typeof station.longitude === "number" ? station.longitude.toFixed(4) : station.longitude}
 										</p>
 										{stationData ? (
 											<div>
@@ -261,9 +262,24 @@ const PollutionHeatmap = ({
 														const val = stationData[key];
 														if (val === null || val === undefined) return null;
 
+														// Format the value based on its type
+														let formattedValue;
+														if (typeof val === "number") {
+															formattedValue = val.toFixed(2);
+														} else if (typeof val === "string") {
+															formattedValue = val;
+														} else {
+															// Handle case when val is an object or another type
+															try {
+																formattedValue = String(val); // Convert any other type to string
+															} catch (error) {
+																formattedValue = "N/A"; // Fallback if conversion fails
+															}
+														}
+
 														return (
 															<li key={key}>
-																{settings.label}: <strong>{val.toFixed(2)}</strong>
+																{settings.label}: <strong>{formattedValue}</strong>
 																<span
 																	style={{
 																		color: getColor(val),

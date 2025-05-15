@@ -18,6 +18,7 @@ import AboutUsPage from "./components/AboutUsPage";
 import ContactUsPage from "./components/ContactUsPage";
 import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
 import StationsPage from "./components/StationsPage";
+import AdvancedMonitoringDashboard from "./components/AdvancedMonitoringDashboard";
 import DataExplorerPage from "./components/DataExplorerPage";
 import DocumentationPage from "./components/DocumentationPage";
 import ApiReferencePage from "./components/ApiReferencePage";
@@ -77,6 +78,9 @@ const Navigation = () => {
 					<Link to="/stations" className={`nav-link ${location.pathname.includes("/stations") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
 						Monitoring Stations
 					</Link>
+					<Link to="/advanced-monitoring" className={`nav-link ${location.pathname.includes("/advanced-monitoring") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
+						Advanced Monitoring
+					</Link>
 					<Link to="/data-explorer" className={`nav-link ${location.pathname.includes("/data-explorer") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
 						Data Explorer
 					</Link>
@@ -105,6 +109,9 @@ const Footer = () => (
 						</li>
 						<li>
 							<Link to="/stations">Monitoring Stations</Link>
+						</li>
+						<li>
+							<Link to="/advanced-monitoring">Advanced Monitoring</Link>
 						</li>
 						<li>
 							<Link to="/data-explorer">Data Explorer</Link>
@@ -271,6 +278,7 @@ function App() {
 						<Route path="/contact-us" element={<ContactUsPage />} />
 						<Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
 						<Route path="/stations" element={<StationsPage />} />
+						<Route path="/advanced-monitoring" element={<AdvancedMonitoringDashboard />} />
 						<Route path="/data-explorer" element={<DataExplorerPage />} />
 						<Route path="/documentation" element={<DocumentationPage />} />
 						<Route path="/api-reference" element={<ApiReferencePage />} />

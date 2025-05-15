@@ -1,0 +1,183 @@
+.contribution-calendar {
+	margin: 1.5rem 0;
+	padding: 1.5rem;
+	background-color: var(--card-bg);
+	border-radius: var(--border-radius);
+	box-shadow: var(--box-shadow);
+}
+
+.calendar-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+
+.calendar-header h3 {
+	margin: 0;
+	font-weight: 600;
+}
+
+.calendar-controls {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.calendar-controls button {
+	background: none;
+	border: 1px solid var(--primary-color);
+	color: var(--primary-color);
+	padding: 0.25rem 0.75rem;
+	font-size: 0.875rem;
+	border-radius: var(--border-radius);
+	cursor: pointer;
+	transition: var(--transition);
+}
+
+.calendar-controls button:hover {
+	background-color: var(--primary-color);
+	color: white;
+}
+
+.calendar-container {
+	margin: 1rem 0;
+}
+
+/* Override the default calendar heatmap styles */
+.react-calendar-heatmap text {
+	font-size: 10px;
+	fill: var(--muted-text-color);
+}
+
+.react-calendar-heatmap .react-calendar-heatmap-small-text {
+	font-size: 8px;
+}
+
+.react-calendar-heatmap rect:hover {
+	stroke: #555;
+	stroke-width: 1px;
+}
+
+/* Custom colors for the levels of pollution */
+.react-calendar-heatmap .color-empty {
+	fill: #ebedf0;
+}
+
+.react-calendar-heatmap .color-scale-1 {
+	fill: #c6e48b; /* Good */
+}
+
+.react-calendar-heatmap .color-scale-2 {
+	fill: #7bc96f; /* Moderate */
+}
+
+.react-calendar-heatmap .color-scale-3 {
+	fill: #ffdd33; /* Unhealthy for Sensitive */
+}
+
+.react-calendar-heatmap .color-scale-4 {
+	fill: #ff9933; /* Unhealthy */
+}
+
+.react-calendar-heatmap .color-scale-5 {
+	fill: #e74c3c; /* Very Unhealthy/Hazardous */
+}
+
+/* Legend styles */
+.calendar-legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	margin-top: 1rem;
+	justify-content: center;
+}
+
+.legend-item {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	font-size: 0.8rem;
+	color: var(--muted-text-color);
+}
+
+.legend-color {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	border-radius: 2px;
+}
+
+.color-empty.legend-color {
+	background-color: #ebedf0;
+	border: 1px solid #ddd;
+}
+
+.color-scale-1.legend-color {
+	background-color: #c6e48b;
+}
+
+.color-scale-2.legend-color {
+	background-color: #7bc96f;
+}
+
+.color-scale-3.legend-color {
+	background-color: #ffdd33;
+}
+
+.color-scale-4.legend-color {
+	background-color: #ff9933;
+}
+
+.color-scale-5.legend-color {
+	background-color: #e74c3c;
+}
+
+/* Tooltip styles */
+.calendar-tooltip {
+	background-color: #fff;
+	border-radius: 3px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	padding: 10px;
+	max-width: 250px;
+	z-index: 9999;
+	font-size: 0.85rem;
+}
+
+.tooltip-date {
+	font-weight: bold;
+	margin-bottom: 5px;
+	color: var(--text-color);
+}
+
+.tooltip-value {
+	font-weight: 600;
+	color: var(--text-color);
+}
+
+.tooltip-range,
+.tooltip-count,
+.tooltip-locations {
+	color: var(--muted-text-color);
+	margin-top: 3px;
+	font-size: 0.8rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+	.calendar-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.75rem;
+	}
+
+	.calendar-controls {
+		width: 100%;
+		justify-content: space-between;
+	}
+
+	.calendar-legend {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+	}
+}
