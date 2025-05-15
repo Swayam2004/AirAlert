@@ -4,6 +4,7 @@ Routes for user preferences and profiles.
 import logging
 from typing import Optional, Dict, Any
 import json
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import select, update, delete
@@ -19,9 +20,10 @@ from ...models.users import (
     AlertSubscription, 
     HealthProfile,
     WebPushSubscription,
-    NotificationPreference,
     NotificationPreference
 )
+from ...models.alerts import Alert, Notification
+from sqlalchemy import case, and_, or_
 
 # Set up logging
 logger = logging.getLogger("airalert.api.users")
@@ -469,3 +471,195 @@ def get_notification_preferences(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Preferences not found.")
 
     return preference
+
+# New models for notification endpoints
+class NotificationResponse(BaseModel):
+    id: int
+    user_id: int
+    message: str
+    delivery_channel: str
+    created_at: Optional[datetime] = None
+    sent_at: Optional[datetime] = None
+    read_at: Optional[datetime] = None
+    alert_id: Optional[int] = None
+    
+    class Config:
+        from_attributes = True
+
+class NotificationList(BaseModel):
+    notifications: list[NotificationResponse]
+    total: int
+    unread: int
+
+@router.get("/notifications", response_model=NotificationList)
+async def get_user_notifications(
+    limit: int = Query(20, ge=1, le=100),
+    skip: int = Query(0, ge=0),
+    unread_only: bool = False,
+    include_broadcasts: bool = False,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get notifications for the current user.
+    Can filter by unread only and include admin broadcasts.
+    """
+    try:
+        # Build base query for user-specific notifications
+        query = select(Notification).where(Notification.user_id == current_user.id)
+        
+        # Add filter for unread notifications if requested
+        if unread_only:
+            query = query.where(Notification.read_at == None)
+        
+        # Add filter for admin broadcasts
+        if include_broadcasts:
+            # First get IDs of all admin broadcast alerts
+            broadcast_alerts_query = select(Alert.id).where(Alert.alert_type == "admin_broadcast")
+            result = await db.execute(broadcast_alerts_query)
+            broadcast_ids = [row[0] for row in result.all()]
+            
+            if broadcast_ids:
+                # Get user's notifications plus any notifications related to admin broadcasts
+                broadcast_notifications = select(Notification).where(
+                    and_(
+                        Notification.alert_id.in_(broadcast_ids),
+                        Notification.user_id == current_user.id
+                    )
+                )
+                query = query.union_all(broadcast_notifications)
+        
+        # Count total and unread
+        count_query = select(
+            func.count(Notification.id),
+            func.sum(case((Notification.read_at == None, 1), else_=0))
+        ).where(Notification.user_id == current_user.id)
+        result = await db.execute(count_query)
+        total, unread = result.first()
+        
+        # Apply pagination
+        query = query.order_by(Notification.created_at.desc()).offset(skip).limit(limit)
+        
+        # Execute query
+        result = await db.execute(query)
+        notifications = result.scalars().all()
+        
+        return NotificationList(
+            notifications=notifications,
+            total=total or 0,
+            unread=unread or 0
+        )
+    
+    except Exception as e:
+        logger.error(f"Error fetching notifications: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching notifications: {str(e)}"
+        )
+
+@router.put("/notifications/{notification_id}/read")
+async def mark_notification_as_read(
+    notification_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Mark a notification as read."""
+    try:
+        # Check if notification exists and belongs to the user
+        notification_query = select(Notification).where(
+            and_(
+                Notification.id == notification_id,
+                Notification.user_id == current_user.id
+            )
+        )
+        result = await db.execute(notification_query)
+        notification = result.scalar_one_or_none()
+        
+        if not notification:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Notification {notification_id} not found"
+            )
+        
+        # Update the notification
+        notification.read_at = datetime.utcnow()
+        await db.commit()
+        
+        return {"message": "Notification marked as read"}
+    
+    except HTTPException:
+        raise
+    
+    except Exception as e:
+        logger.error(f"Error marking notification as read: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error marking notification as read: {str(e)}"
+        )
+
+@router.put("/notifications/read-all")
+async def mark_all_notifications_as_read(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Mark all notifications as read for the current user."""
+    try:
+        # Update all unread notifications for the user
+        update_stmt = update(Notification).where(
+            and_(
+                Notification.user_id == current_user.id,
+                Notification.read_at == None
+            )
+        ).values(read_at=datetime.utcnow())
+        
+        await db.execute(update_stmt)
+        await db.commit()
+        
+        return {"message": "All notifications marked as read"}
+    
+    except Exception as e:
+        logger.error(f"Error marking all notifications as read: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error marking all notifications as read: {str(e)}"
+        )
+
+@router.delete("/notifications/{notification_id}")
+async def delete_notification(
+    notification_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete a notification."""
+    try:
+        # Check if notification exists and belongs to the user
+        notification_query = select(Notification).where(
+            and_(
+                Notification.id == notification_id,
+                Notification.user_id == current_user.id
+            )
+        )
+        result = await db.execute(notification_query)
+        notification = result.scalar_one_or_none()
+        
+        if not notification:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Notification {notification_id} not found"
+            )
+        
+        # Delete the notification
+        await db.delete(notification)
+        await db.commit()
+        
+        return {"message": "Notification deleted"}
+    
+    except HTTPException:
+        raise
+    
+    except Exception as e:
+        logger.error(f"Error deleting notification: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error deleting notification: {str(e)}"
+        )

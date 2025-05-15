@@ -1,6 +1,12 @@
 import axios from "axios";
 
 const API = {
+	// Common HTTP methods for REST operations
+	get: (url, config = {}) => axios.get(url, config),
+	post: (url, data = {}, config = {}) => axios.post(url, data, config),
+	put: (url, data = {}, config = {}) => axios.put(url, data, config),
+	delete: (url, config = {}) => axios.delete(url, config),
+
 	// Health check
 	healthCheck: () => axios.get("/health"),
 
@@ -43,7 +49,15 @@ const API = {
 
 	getAlerts: (params = {}) => axios.get("/api/alerts", { params }),
 
-	getUserNotifications: (userId, unreadOnly = false) => axios.get(`/api/notifications/${userId}`, { params: { unread_only: unreadOnly } }),
+	getUserNotifications: (userId, options = {}) => {
+		const { unreadOnly = false, includeAdminBroadcasts = false } = typeof options === "object" ? options : { unreadOnly: options };
+		return axios.get(`/api/notifications/${userId}`, {
+			params: {
+				unread_only: unreadOnly,
+				include_broadcasts: includeAdminBroadcasts,
+			},
+		});
+	},
 
 	// Map Data
 	getInteractiveMap: () => axios.get("/api/map"),

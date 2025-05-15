@@ -1,5 +1,5 @@
 """
-Admin routes for user management.
+Admin routes for user management and system administration.
 """
 import logging
 from datetime import datetime
@@ -13,12 +13,18 @@ from ..auth.utils import get_admin_user
 from ..auth.models import UserResponse
 from ...models.database import get_db
 from ...models.users import User
+from .user_management import router as user_management_router
+from .broadcast import router as broadcast_router
 
 # Set up logging
 logger = logging.getLogger("airalert.api.admin")
 
 # Create router
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+# Include sub-routers
+router.include_router(user_management_router)
+router.include_router(broadcast_router)
 
 @router.get("/users", response_model=List[UserResponse])
 async def list_users(

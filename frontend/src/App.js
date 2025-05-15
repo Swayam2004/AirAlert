@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import "./styles/designSystem.css";
 import "./App.css";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, AuthContext } from "./context/AuthContext";
 import HeaderActions from "./components/HeaderActions";
 
 // Import only used components
@@ -57,6 +57,7 @@ axios.interceptors.response.use(
 const Navigation = () => {
 	const location = useLocation();
 	const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+	const { hasRole } = useContext(AuthContext);
 
 	return (
 		<nav className="main-nav">
@@ -85,6 +86,12 @@ const Navigation = () => {
 					<Link to="/data-explorer" className={`nav-link ${location.pathname.includes("/data-explorer") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
 						Data Explorer
 					</Link>
+					{/* Admin Panel Link - Only visible to admin and superuser roles */}
+					{hasRole("admin") && (
+						<Link to="/admin" className={`nav-link ${location.pathname.includes("/admin") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
+							Admin Panel
+						</Link>
+					)}
 				</div>
 			</div>
 		</nav>

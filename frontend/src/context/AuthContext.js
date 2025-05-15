@@ -135,8 +135,19 @@ export const AuthProvider = ({ children }) => {
 
 	const hasRole = (role) => {
 		if (!user) return false;
+
+		// Handle array of roles - return true if user has any of them
+		if (Array.isArray(role)) {
+			return role.some((r) => hasRole(r));
+		}
+
+		// Special case for "admin" - both "admin" and "superuser" have admin privileges
 		if (role === "admin") return ["admin", "superuser"].includes(user.role);
+
+		// Superuser check
 		if (role === "superuser") return user.role === "superuser";
+
+		// Regular role check
 		return user.role === role;
 	};
 
