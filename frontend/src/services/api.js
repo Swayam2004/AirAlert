@@ -51,7 +51,7 @@ const API = {
 
 	getUserNotifications: (userId, options = {}) => {
 		const { unreadOnly = false, includeAdminBroadcasts = false } = typeof options === "object" ? options : { unreadOnly: options };
-		return axios.get(`/api/notifications/${userId}`, {
+		return axios.get(`/api/users/${userId}/notifications`, {
 			params: {
 				unread_only: unreadOnly,
 				include_broadcasts: includeAdminBroadcasts,
@@ -82,10 +82,10 @@ const API = {
 	},
 
 	// Mark a notification as read
-	markNotificationRead: (notificationId) => axios.post(`/api/notifications/${notificationId}/read`),
+	markNotificationRead: (notificationId) => axios.post(`/api/users/notifications/${notificationId}/read`),
 
 	// Mark all notifications as read
-	markAllNotificationsRead: (userId) => axios.post(`/api/notifications/${userId}/read-all`),
+	markAllNotificationsRead: (userId) => axios.post(`/api/users/${userId}/notifications/read-all`),
 
 	// Send verification email
 	sendVerificationEmail: (email) => axios.post("/api/verify_email", { email }),
@@ -105,6 +105,22 @@ const API = {
 
 	updateUserPreferences: (userId, preferences) => axios.put(`/api/users/${userId}/preferences`, preferences),
 
+	// User Settings
+	getUserProfile: (userId) => axios.get(`/api/users/${userId}`),
+
+	updateUserProfile: (userId, data) => axios.put(`/api/users/${userId}`, data),
+
+	fetchSecurityInfo: (userId) => axios.get(`/api/users/${userId}/security`),
+
+	updateSecuritySettings: (userId, settings) => axios.put(`/api/users/${userId}/security`, settings),
+
+	logoutAllSessions: (userId) => axios.post(`/api/users/${userId}/logout-all`),
+
+	fetchUserLocations: (userId) => axios.get(`/api/users/${userId}/locations`),
+
+	updateUserLocations: (userId, locations) => axios.put(`/api/users/${userId}/locations`, locations),
+
+	// User Subscriptions Management
 	createAlertSubscription: (userId, subscription) => axios.post(`/api/users/${userId}/alert_subscriptions`, subscription),
 
 	deleteAlertSubscription: (userId, subscriptionId) => axios.delete(`/api/users/${userId}/alert_subscriptions/${subscriptionId}`),
@@ -130,15 +146,11 @@ const API = {
 			},
 		}),
 
-	// Authentication Endpoints
-	// Removed duplicate login method
-
+	// Authentication Endpoints additional methods
 	register: (name, email, password) => axios.post("/api/register", { name, email, password }),
 
-	// User Management
-	getUserProfile: (userId) => axios.get(`/api/users/${userId}`),
-
-	updateUserProfile: (userId, data) => axios.put(`/api/users/${userId}`, data),
+	// Profile update with different parameter format
+	updateUserProfileDetailed: (data) => axios.put(`/api/users/${data.userId}/profile`, data.profileData),
 };
 
 // Helper functions for working with the API

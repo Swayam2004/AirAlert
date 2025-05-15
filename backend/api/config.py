@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     llm_model: str = os.environ.get("LLM_MODEL", "gpt-4o")
     alert_expiry_hours: int = int(os.environ.get("ALERT_EXPIRY_HOURS", 6))
     default_radius_km: int = 25
-    gis_output_dir: str = os.environ.get("GIS_OUTPUT_DIR", "output")
+    gis_output_dir: str = os.environ.get("GIS_OUTPUT_DIR", "/home/swayam/projects/AirAlert/backend/gis_output")
     message_templates: dict = {
         "default_alert": "Air quality alert: {pollutant} levels are {severity} in your area. Current value: {current_value}. Take necessary precautions."
     }

@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import NotificationCenter from "./NotificationCenter";
+import UserSettings from "./UserSettings";
 
 const HeaderActions = ({ openSettingsModal, showSettingsModal, setShowSettingsModal }) => {
 	const { user, loading, logout } = useAuth();
@@ -69,13 +70,5 @@ const HeaderActions = ({ openSettingsModal, showSettingsModal, setShowSettingsMo
 		</div>
 	);
 };
-
-// Placeholder component - replace with your actual UserSettings component
-const UserSettings = ({ user, onClose }) => (
-	<div className="user-settings">
-		<h3>Account Settings for {user.name}</h3>
-		<p>This is a placeholder for the user settings component.</p>
-	</div>
-);
 
 export default HeaderActions;

@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import "./styles/designSystem.css";
 import "./App.css";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import HeaderActions from "./components/HeaderActions";
 
 // Import only used components
@@ -188,38 +189,40 @@ function App() {
 	return (
 		<Router>
 			<AuthProvider>
-				<div className="app">
-					<header className="app-header">
-						<Navigation />
+				<ThemeProvider>
+					<div className="app">
+						<header className="app-header">
+							<Navigation />
 
-						<HeaderActions openSettingsModal={openSettingsModal} showSettingsModal={showSettingsModal} setShowSettingsModal={setShowSettingsModal} />
-					</header>
+							<HeaderActions openSettingsModal={openSettingsModal} showSettingsModal={showSettingsModal} setShowSettingsModal={setShowSettingsModal} />
+						</header>
 
-					<main className="app-main">
-						<Routes>
-							<Route path="/" element={<HomePage />} />
-							<Route path="/how-to-operate" element={<HowToOperate />} />
-							<Route path="/dashboard" element={<Dashboard />} />
-							<Route path="/profile" element={<ProfilesPage />} />
-							<Route path="/alerts" element={<AlertsPage />} />
-							<Route path="/admin" element={<AdminPanel />} />
-							<Route path="/login" element={<LoginPage />} />
-							<Route path="/register" element={<RegisterPage />} />
-							<Route path="/about-us" element={<AboutUsPage />} />
-							<Route path="/contact-us" element={<ContactUsPage />} />
-							<Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-							<Route path="/stations" element={<StationsPage />} />
-							<Route path="/advanced-monitoring" element={<AdvancedMonitoringDashboard />} />
-							<Route path="/data-explorer" element={<DataExplorerPage />} />
-							<Route path="/documentation" element={<DocumentationPage />} />
-							<Route path="/api-reference" element={<ApiReferencePage />} />
-						</Routes>
-					</main>
+						<main className="app-main">
+							<Routes>
+								<Route path="/" element={<HomePage />} />
+								<Route path="/how-to-operate" element={<HowToOperate />} />
+								<Route path="/dashboard" element={<Dashboard />} />
+								<Route path="/profile" element={<ProfilesPage />} />
+								<Route path="/alerts" element={<AlertsPage />} />
+								<Route path="/admin" element={<AdminPanel />} />
+								<Route path="/login" element={<LoginPage />} />
+								<Route path="/register" element={<RegisterPage />} />
+								<Route path="/about-us" element={<AboutUsPage />} />
+								<Route path="/contact-us" element={<ContactUsPage />} />
+								<Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+								<Route path="/stations" element={<StationsPage />} />
+								<Route path="/advanced-monitoring" element={<AdvancedMonitoringDashboard />} />
+								<Route path="/data-explorer" element={<DataExplorerPage />} />
+								<Route path="/documentation" element={<DocumentationPage />} />
+								<Route path="/api-reference" element={<ApiReferencePage />} />
+							</Routes>
+						</main>
 
-					<Footer />
+						<Footer />
 
-					{!isHealthy && <div className="api-status-warning">⚠️ API connection issues. Some features may not work correctly.</div>}
-				</div>
+						{!isHealthy && <div className="api-status-warning">⚠️ API connection issues. Some features may not work correctly.</div>}
+					</div>
+				</ThemeProvider>
 			</AuthProvider>
 		</Router>
 	);

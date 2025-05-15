@@ -216,10 +216,13 @@ class AuthService {
 			const refreshToken = localStorage.getItem("refreshToken");
 			if (!refreshToken) return false;
 
-			// Using the refresh token directly as the payload since that's what the API expects
-			const response = await axios.post(`${API_URL}/api/auth/refresh-token`, refreshToken, {
+			// Send refresh token as form data
+			const formData = new URLSearchParams();
+			formData.append("refresh_token", refreshToken);
+
+			const response = await axios.post(`${API_URL}/api/auth/refresh`, formData, {
 				headers: {
-					"Content-Type": "text/plain",
+					"Content-Type": "application/x-www-form-urlencoded",
 				},
 			});
 
