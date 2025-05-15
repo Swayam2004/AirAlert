@@ -18,6 +18,7 @@ from .monitoring.routes import router as monitoring_router
 from .alerts.routes import router as alerts_router
 from .users.routes import router as users_router
 from .processing.routes import router as processing_router
+from .admin.routes import router as admin_router
 
 # Set up logging configuration
 logging.basicConfig(
@@ -78,6 +79,7 @@ app.include_router(monitoring_router, prefix="/api")
 app.include_router(alerts_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
 app.include_router(processing_router, prefix="/api")
+app.include_router(admin_router, prefix="/api")
 
 # Initialize database
 @app.on_event("startup")

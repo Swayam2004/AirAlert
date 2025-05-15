@@ -18,9 +18,18 @@ class Settings(BaseSettings):
     cors_origins: list = ["http://localhost:8001", "http://127.0.0.1:8001"]
     
     # JWT settings
-    jwt_secret_key: str = os.environ.get("JWT_SECRET_KEY", "")
+    jwt_secret_key: str = os.environ.get("JWT_SECRET_KEY", "supersecretkey")  # Replace with actual secret in production
+    jwt_refresh_secret_key: str = os.environ.get("JWT_REFRESH_SECRET_KEY", "refreshsupersecretkey")  # Replace with actual secret in production
     jwt_algorithm: str = os.environ.get("JWT_ALGORITHM", "HS256")
     jwt_access_token_expire_minutes: int = int(os.environ.get("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+    jwt_refresh_token_expire_days: int = int(os.environ.get("JWT_REFRESH_TOKEN_EXPIRE_DAYS", 7))
+    
+    # Email settings
+    email_host: str = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+    email_port: int = int(os.environ.get("EMAIL_PORT", 587))
+    email_username: str = os.environ.get("EMAIL_USERNAME", "")
+    email_password: str = os.environ.get("EMAIL_PASSWORD", "")
+    email_from: str = os.environ.get("EMAIL_FROM", "noreply@airalert.com")
     
     # Web push settings
     vapid_public_key: str = os.environ.get("VAPID_PUBLIC_KEY", "")

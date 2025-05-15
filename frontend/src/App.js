@@ -75,9 +75,9 @@ const Navigation = () => {
 					<Link to="/dashboard" className={`nav-link ${location.pathname === "/dashboard" ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
 						Dashboard
 					</Link>
-					<Link to="/stations" className={`nav-link ${location.pathname.includes("/stations") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
+					{/* <Link to="/stations" className={`nav-link ${location.pathname.includes("/stations") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
 						Monitoring Stations
-					</Link>
+					</Link> */}
 					<Link to="/advanced-monitoring" className={`nav-link ${location.pathname.includes("/advanced-monitoring") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
 						Advanced Monitoring
 					</Link>
@@ -107,9 +107,9 @@ const Footer = () => (
 						<li>
 							<Link to="/dashboard">Dashboard</Link>
 						</li>
-						<li>
+						{/* <li>
 							<Link to="/stations">Monitoring Stations</Link>
-						</li>
+						</li> */}
 						<li>
 							<Link to="/advanced-monitoring">Advanced Monitoring</Link>
 						</li>
