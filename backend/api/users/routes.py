@@ -20,6 +20,7 @@ from ...models.users import (
     AlertSubscription, 
     HealthProfile,
     WebPushSubscription,
+    NotificationPreference,
     NotificationPreference
 )
 from ...models.alerts import Alert, Notification
