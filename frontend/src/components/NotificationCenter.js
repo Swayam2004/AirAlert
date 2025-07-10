@@ -20,12 +20,16 @@ const NotificationCenter = ({ userId, onSettingsClick }) => {
 		const loadNotifications = async () => {
 			setLoading(true);
 			try {
-				const response = await API.getUserNotifications(userId);
+				// Fetch user notifications including admin broadcasts
+				const response = await API.getUserNotifications(userId, {
+					includeAdminBroadcasts: true,
+					unreadOnly: filter === "unread",
+				});
 				const notificationData = response.data.notifications || [];
 				setNotifications(notificationData);
 
 				// Count unread notifications
-				setUnreadCount(notificationData.filter((n) => !n.read_at).length);
+				setUnreadCount(response.data.unread || 0);
 
 				setError(null);
 			} catch (err) {
@@ -36,18 +40,59 @@ const NotificationCenter = ({ userId, onSettingsClick }) => {
 			}
 		};
 
+		// Initial load
 		loadNotifications();
 
-		// Set up polling for new notifications
-		const intervalId = setInterval(loadNotifications, 60000); // Check every minute
+		// Set up polling for new notifications (every 15 seconds for real-time feel)
+		const intervalId = setInterval(loadNotifications, 15000);
 
-		return () => clearInterval(intervalId);
-	}, [userId]);
+		// Set up WebSocket connection for real-time updates if available
+		let socket = null;
+		try {
+			// Check if WebSocket is supported and configured
+			if (window.WebSocket && process.env.REACT_APP_WEBSOCKET_URL) {
+				socket = new WebSocket(process.env.REACT_APP_WEBSOCKET_URL);
+
+				socket.onopen = () => {
+					console.log("WebSocket connected for real-time notifications");
+					// Subscribe to notifications for this user
+					socket.send(
+						JSON.stringify({
+							action: "subscribe",
+							channel: `user_notifications_${userId}`,
+						})
+					);
+				};
+
+				socket.onmessage = (event) => {
+					const data = JSON.parse(event.data);
+					if (data.type === "notification") {
+						// Refresh notifications when we get a push
+						loadNotifications();
+					}
+				};
+
+				socket.onerror = (error) => {
+					console.error("WebSocket error:", error);
+				};
+			}
+		} catch (err) {
+			console.error("Error setting up WebSocket:", err);
+		}
+
+		// Clean up function
+		return () => {
+			clearInterval(intervalId);
+			if (socket) {
+				socket.close();
+			}
+		};
+	}, [userId, filter]);
 
 	// Mark a notification as read
 	const handleMarkAsRead = async (notificationId) => {
 		try {
-			await API.markNotificationRead(notificationId);
+			await API.put(`/api/users/notifications/${notificationId}/read`);
 
 			// Update local state to reflect the change
 			setNotifications(
@@ -72,13 +117,8 @@ const NotificationCenter = ({ userId, onSettingsClick }) => {
 		try {
 			if (!userId || notifications.length === 0) return;
 
-			// Get list of unread notification IDs
-			const unreadIds = notifications.filter((n) => !n.read_at).map((n) => n.id);
-
-			if (unreadIds.length === 0) return;
-
-			// Mark each as read
-			await Promise.all(unreadIds.map((id) => API.markNotificationRead(id)));
+			// Call the API to mark all notifications as read
+			await API.put("/api/users/notifications/read-all");
 
 			// Update all notifications in state
 			setNotifications(
@@ -92,6 +132,25 @@ const NotificationCenter = ({ userId, onSettingsClick }) => {
 			setUnreadCount(0);
 		} catch (err) {
 			console.error("Error marking all notifications as read:", err);
+		}
+	};
+
+	// Delete a notification
+	const handleDeleteNotification = async (notificationId) => {
+		try {
+			// Call the API to delete the notification
+			await API.delete(`/api/users/notifications/${notificationId}`);
+
+			// Update local state to remove the notification
+			setNotifications(notifications.filter((n) => n.id !== notificationId));
+
+			// Update unread count if needed
+			const wasUnread = notifications.find((n) => n.id === notificationId)?.read_at === null;
+			if (wasUnread) {
+				setUnreadCount((prev) => Math.max(0, prev - 1));
+			}
+		} catch (err) {
+			console.error("Error deleting notification:", err);
 		}
 	};
 
@@ -254,16 +313,35 @@ const NotificationCenter = ({ userId, onSettingsClick }) => {
 
 										{groupedNotifications[date].map((notification) => {
 											const isUnread = !notification.read_at;
-											const severityClass = notification.alert ? getSeverityClass(notification.alert.severity_level) : "";
+											let severityClass = notification.alert ? getSeverityClass(notification.alert.severity_level) : "";
+											const isAdminBroadcast = notification.alert && notification.alert.alert_type === "admin_broadcast";
+
+											// Special handling for admin broadcasts
+											if (isAdminBroadcast) {
+												// Map admin broadcast priority to severity class
+												const priorityLevel = notification.alert.severity_level;
+												if (priorityLevel === 2) severityClass = "severity-high";
+												else if (priorityLevel === 1) severityClass = "severity-medium";
+												else severityClass = "severity-low";
+											}
 
 											return (
-												<div key={notification.id} className={`notification-item ${isUnread ? "unread" : ""} ${severityClass}`}>
-													<div className="notification-badge">{notification.alert ? getPollutantIcon(notification.alert.pollutant) : getChannelIcon(notification.delivery_channel)}</div>
+												<div key={notification.id} className={`notification-item ${isUnread ? "unread" : ""} ${severityClass} ${isAdminBroadcast ? "admin-broadcast" : ""}`}>
+													<div className="notification-badge">
+														{isAdminBroadcast
+															? "📣" // Admin broadcast icon
+															: notification.alert
+															? getPollutantIcon(notification.alert.pollutant)
+															: getChannelIcon(notification.delivery_channel)}
+													</div>
 
 													<div className="notification-content">
-														<div className="notification-message">{notification.message}</div>
+														<div className="notification-message">
+															{isAdminBroadcast && <span className="broadcast-label">BROADCAST: </span>}
+															{notification.message}
+														</div>
 
-														{notification.alert && (
+														{notification.alert && !isAdminBroadcast && (
 															<div className="notification-details">
 																<span className="notification-pollutant">{notification.alert.pollutant.toUpperCase()}</span>
 																<span className="notification-value">
@@ -486,6 +564,24 @@ const NotificationCenter = ({ userId, onSettingsClick }) => {
 
 				.notification-item.unread:hover {
 					background-color: var(--primary-100);
+				}
+
+				/* Admin broadcast styling */
+				.notification-item.admin-broadcast {
+					border-left: 3px solid var(--primary-700);
+				}
+
+				.notification-item.admin-broadcast.severity-high {
+					border-left-color: var(--danger-500);
+				}
+
+				.notification-item.admin-broadcast.severity-medium {
+					border-left-color: var(--warning-500);
+				}
+
+				.broadcast-label {
+					font-weight: var(--font-weight-bold);
+					margin-right: var(--space-1);
 				}
 
 				.notification-badge {

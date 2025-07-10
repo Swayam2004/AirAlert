@@ -819,10 +819,11 @@ const DataExplorerPage = () => {
 							</div>
 						</div>
 
+					</div>
+
 						<button className="apply-filters" onClick={handleFilterChange}>
 							Apply Filters
 						</button>
-					</div>
 				</div>
 
 				{loading ? (

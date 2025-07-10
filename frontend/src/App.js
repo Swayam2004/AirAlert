@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import "./styles/designSystem.css";
 import "./App.css";
+import { AuthProvider, AuthContext } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import HeaderActions from "./components/HeaderActions";
 
 // Import only used components
 import HomePage from "./components/HomePage";
@@ -12,18 +15,18 @@ import Dashboard from "./components/DashboardNew";
 import ProfilesPage from "./components/ProfilesPage";
 import AlertsPage from "./components/AlertsPage";
 import AdminPanel from "./components/AdminPanel";
-import LoginPage from "./components/LoginPage";
-import SignupPage from "./components/SignupPage";
+import LoginPage from "./components/auth/LoginPage";
+import RegisterPage from "./components/auth/RegisterPage";
 import AboutUsPage from "./components/AboutUsPage";
 import ContactUsPage from "./components/ContactUsPage";
 import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
 import StationsPage from "./components/StationsPage";
+import AdvancedMonitoringDashboard from "./components/AdvancedMonitoringDashboard";
 import DataExplorerPage from "./components/DataExplorerPage";
 import DocumentationPage from "./components/DocumentationPage";
 import ApiReferencePage from "./components/ApiReferencePage";
 import AuthService from "./services/auth";
 import NotificationCenter from "./components/NotificationCenter";
-import UserSettings from "./components/UserSettings";
 
 // Configure axios defaults
 axios.defaults.baseURL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000"; // Use environment variable or explicitly set the backend URL
@@ -32,7 +35,7 @@ axios.defaults.timeout = 10000; // Add a timeout to avoid hanging requests
 
 // Add authorization header and error handling to all requests
 axios.interceptors.request.use((config) => {
-	const token = localStorage.getItem("token");
+	const token = localStorage.getItem("accessToken");
 	if (token) {
 		config.headers.Authorization = `Bearer ${token}`;
 	}
@@ -55,6 +58,7 @@ axios.interceptors.response.use(
 const Navigation = () => {
 	const location = useLocation();
 	const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+	const { hasRole } = useContext(AuthContext);
 
 	return (
 		<nav className="main-nav">
@@ -74,12 +78,21 @@ const Navigation = () => {
 					<Link to="/dashboard" className={`nav-link ${location.pathname === "/dashboard" ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
 						Dashboard
 					</Link>
-					<Link to="/stations" className={`nav-link ${location.pathname.includes("/stations") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
+					{/* <Link to="/stations" className={`nav-link ${location.pathname.includes("/stations") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
 						Monitoring Stations
+					</Link> */}
+					<Link to="/advanced-monitoring" className={`nav-link ${location.pathname.includes("/advanced-monitoring") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
+						Advanced Monitoring
 					</Link>
 					<Link to="/data-explorer" className={`nav-link ${location.pathname.includes("/data-explorer") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
 						Data Explorer
 					</Link>
+					{/* Admin Panel Link - Only visible to admin and superuser roles */}
+					{hasRole("admin") && (
+						<Link to="/admin" className={`nav-link ${location.pathname.includes("/admin") ? "active" : ""}`} onClick={() => setIsMobileNavOpen(false)}>
+							Admin Panel
+						</Link>
+					)}
 				</div>
 			</div>
 		</nav>
@@ -103,8 +116,11 @@ const Footer = () => (
 						<li>
 							<Link to="/dashboard">Dashboard</Link>
 						</li>
-						<li>
+						{/* <li>
 							<Link to="/stations">Monitoring Stations</Link>
+						</li> */}
+						<li>
+							<Link to="/advanced-monitoring">Advanced Monitoring</Link>
 						</li>
 						<li>
 							<Link to="/data-explorer">Data Explorer</Link>
@@ -144,9 +160,6 @@ const Footer = () => (
 );
 
 function App() {
-	const [isAuthenticated, setIsAuthenticated] = useState(false);
-	const [user, setUser] = useState(null);
-	const [loading, setLoading] = useState(true);
 	const [showSettingsModal, setShowSettingsModal] = useState(false);
 	const [isHealthy, setIsHealthy] = useState(true);
 
@@ -191,98 +204,48 @@ function App() {
 		return () => clearInterval(intervalId);
 	}, []);
 
-	// Commenting out unused function
-	// const handleLogin = (userData) => {
-	// 	setIsAuthenticated(true);
-	// 	setUser(userData);
-	// };
-
-	const handleLogout = async () => {
-		try {
-			await AuthService.logout();
-			setIsAuthenticated(false);
-			setUser(null);
-		} catch (err) {
-			console.error("Error logging out:", err);
-		}
-	};
-
 	const openSettingsModal = () => {
 		setShowSettingsModal(true);
 	};
 
-	if (loading) {
-		return (
-			<div className="loading-container">
-				<div className="loading">Loading AirAlert...</div>
-			</div>
-		);
-	}
-
 	return (
 		<Router>
-			<div className="app">
-				<header className="app-header">
-					<Navigation />
+			<AuthProvider>
+				<ThemeProvider>
+					<div className="app">
+						<header className="app-header">
+							<Navigation />
 
-					<div className="header-actions">
-						{isAuthenticated ? (
-							<>
-								<NotificationCenter userId={user?.id} onSettingsClick={openSettingsModal} />
+							<HeaderActions openSettingsModal={openSettingsModal} showSettingsModal={showSettingsModal} setShowSettingsModal={setShowSettingsModal} />
+						</header>
 
-								<div className="user-profile">
-									<div className="user-avatar" onClick={openSettingsModal}>
-										{user?.name?.charAt(0) || "U"}
-									</div>
-									<div className="user-dropdown">
-										<div className="user-info">
-											<p className="user-name">{user?.name}</p>
-											<p className="user-email">{user?.email}</p>
-										</div>
-										<div className="dropdown-divider"></div>
-										<button className="user-settings-btn" onClick={openSettingsModal}>
-											Settings
-										</button>
-										<button className="user-logout-btn" onClick={handleLogout}>
-											Logout
-										</button>
-									</div>
-								</div>
-							</>
-						) : (
-							<Link to="/login" className="login-button">
-								Log In
-							</Link>
-						)}
+						<main className="app-main">
+							<Routes>
+								<Route path="/" element={<HomePage />} />
+								<Route path="/how-to-operate" element={<HowToOperate />} />
+								<Route path="/dashboard" element={<Dashboard />} />
+								<Route path="/profile" element={<ProfilesPage />} />
+								<Route path="/alerts" element={<AlertsPage />} />
+								<Route path="/admin" element={<AdminPanel />} />
+								<Route path="/login" element={<LoginPage />} />
+								<Route path="/register" element={<RegisterPage />} />
+								<Route path="/about-us" element={<AboutUsPage />} />
+								<Route path="/contact-us" element={<ContactUsPage />} />
+								<Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+								<Route path="/stations" element={<StationsPage />} />
+								<Route path="/advanced-monitoring" element={<AdvancedMonitoringDashboard />} />
+								<Route path="/data-explorer" element={<DataExplorerPage />} />
+								<Route path="/documentation" element={<DocumentationPage />} />
+								<Route path="/api-reference" element={<ApiReferencePage />} />
+							</Routes>
+						</main>
+
+						<Footer />
+
+						{!isHealthy && <div className="api-status-warning">⚠️ API connection issues. Some features may not work correctly.</div>}
 					</div>
-				</header>
-
-				<main className="app-main">
-					<Routes>
-						<Route path="/" element={<HomePage />} />
-						<Route path="/how-to-operate" element={<HowToOperate />} />
-						<Route path="/dashboard" element={<Dashboard />} />
-						<Route path="/profile" element={<ProfilesPage />} />
-						<Route path="/alerts" element={<AlertsPage />} />
-						<Route path="/admin" element={<AdminPanel />} />
-						<Route path="/login" element={<LoginPage />} />
-						<Route path="/signup" element={<SignupPage />} />
-						<Route path="/about-us" element={<AboutUsPage />} />
-						<Route path="/contact-us" element={<ContactUsPage />} />
-						<Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-						<Route path="/stations" element={<StationsPage />} />
-						<Route path="/data-explorer" element={<DataExplorerPage />} />
-						<Route path="/documentation" element={<DocumentationPage />} />
-						<Route path="/api-reference" element={<ApiReferencePage />} />
-					</Routes>
-				</main>
-
-				<Footer />
-
-				{showSettingsModal && isAuthenticated && <UserSettings user={user} onClose={() => setShowSettingsModal(false)} />}
-
-				{!isHealthy && <div className="api-status-warning">⚠️ API connection issues. Some features may not work correctly.</div>}
-			</div>
+				</ThemeProvider>
+			</AuthProvider>
 		</Router>
 	);
 }

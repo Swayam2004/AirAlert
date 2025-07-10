@@ -19,6 +19,7 @@ langchain==0.1.16             # Refactored versioning, compatible with latest mo
 fastapi>=0.95.0               # Current latest
 uvicorn>=0.21.0               # Latest as of 2025
 pydantic>=2.0.0               # v2 line is stable and recommended
+slowapi>=0.1.9                # Rate limiting for FastAPI
 
 # Database
 psycopg2-binary==2.9.9        # Maintained binary wheel

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { fetchUserPreferences, updateUserPreferences } from "../services/api";
+import API from "../services/api";
 import NotificationChannels from "./NotificationPreferences/NotificationChannels";
 import SensitivitySettings from "./NotificationPreferences/SensitivitySettings";
 import AlertSubscriptions from "./NotificationPreferences/AlertSubscriptions";
@@ -66,7 +66,7 @@ const NotificationPreferences = ({ userId, onClose }) => {
 		const fetchPreferences = async () => {
 			setLoading(true);
 			try {
-				const data = await fetchUserPreferences(userId);
+				const data = await API.fetchUserPreferences(userId);
 				setPreferences(data);
 				setError(null);
 			} catch (err) {
@@ -174,7 +174,7 @@ const NotificationPreferences = ({ userId, onClose }) => {
 		setSuccessMessage("");
 
 		try {
-			await updateUserPreferences(userId, preferences);
+			await API.updateUserPreferences(userId, preferences);
 			setSuccessMessage("Preferences saved successfully");
 
 			// Hide success message after 3 seconds

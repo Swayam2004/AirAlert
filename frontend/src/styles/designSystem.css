@@ -216,6 +216,52 @@
 	--focus-ring-offset: 2px;
 }
 
+/* Dark Theme Variables */
+[data-theme="dark"] {
+	/* Background Colors */
+	--bg-primary: var(--neutral-900);
+	--bg-secondary: var(--neutral-800);
+	--bg-tertiary: var(--neutral-700);
+
+	/* Text Colors */
+	--text-primary: var(--neutral-100);
+	--text-secondary: var(--neutral-300);
+	--text-muted: var(--neutral-500);
+
+	/* Border Colors */
+	--border-color: var(--neutral-700);
+	--border-light: var(--neutral-600);
+
+	/* Input Colors */
+	--input-bg: var(--neutral-800);
+	--input-border: var(--neutral-600);
+	--input-text: var(--neutral-200);
+	--input-placeholder: var(--neutral-500);
+
+	/* Card Colors */
+	--card-bg: var(--neutral-800);
+	--card-border: var(--neutral-700);
+
+	/* Shadow Colors */
+	--shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.3);
+	--shadow-md: 0 6px 10px rgba(0, 0, 0, 0.4);
+	--shadow-lg: 0 10px 14px rgba(0, 0, 0, 0.5);
+
+	/* Button Colors */
+	--button-bg: var(--neutral-700);
+	--button-text: var(--neutral-100);
+	--button-hover-bg: var(--neutral-600);
+
+	/* Overlay Colors */
+	--overlay-bg: rgba(0, 0, 0, 0.7);
+
+	/* Scrollbar */
+	--scrollbar-track: var(--neutral-800);
+	--scrollbar-thumb: var(--neutral-600);
+}
+
+/* Light Theme (Default) Variables */
+
 /* Base styles */
 *,
 *::before,

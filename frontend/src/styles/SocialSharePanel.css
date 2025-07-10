@@ -1,0 +1,147 @@
+.social-share-panel {
+	background-color: var(--card-bg);
+	border-radius: 8px;
+	padding: 1.5rem;
+	margin-bottom: 2rem;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.social-share-header {
+	margin-bottom: 1rem;
+}
+
+.social-share-header h3 {
+	margin-top: 0;
+	margin-bottom: 0.5rem;
+	font-size: 1.2rem;
+}
+
+.share-summary {
+	font-size: 0.9rem;
+	color: var(--text-secondary);
+	margin-bottom: 1rem;
+}
+
+.social-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	margin-bottom: 1.5rem;
+}
+
+.share-button {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem 0.75rem;
+	border-radius: 4px;
+	border: none;
+	cursor: pointer;
+	transition: transform 0.1s, opacity 0.1s;
+	color: white;
+	font-weight: 500;
+}
+
+.share-button:hover {
+	transform: translateY(-2px);
+}
+
+.share-button:active {
+	transform: translateY(0);
+	opacity: 0.9;
+}
+
+.platform-icon {
+	font-size: 1.1rem;
+	font-weight: bold;
+}
+
+.twitter {
+	background-color: #1da1f2;
+}
+
+.facebook {
+	background-color: #4267b2;
+}
+
+.linkedin {
+	background-color: #0077b5;
+}
+
+.whatsapp {
+	background-color: #25d366;
+}
+
+.email {
+	background-color: #808080;
+}
+
+.copy-link-section {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+.share-link-input {
+	flex: 1;
+	padding: 0.75rem;
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	background-color: var(--background-light);
+	color: var(--text-color);
+}
+
+.copy-button {
+	padding: 0.75rem 1rem;
+	background-color: var(--primary-color);
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: 500;
+	white-space: nowrap;
+	transition: background-color 0.2s;
+}
+
+.copy-button:hover {
+	background-color: var(--primary-color-dark);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+	.social-buttons {
+		justify-content: center;
+	}
+
+	.copy-link-section {
+		flex-direction: column;
+	}
+
+	.share-link-input {
+		width: 100%;
+	}
+
+	.copy-button {
+		width: 100%;
+		margin-top: 0.5rem;
+	}
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+	.share-button:hover {
+		transform: none;
+	}
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+	.share-button {
+		border: 1px solid black;
+	}
+
+	.share-link-input {
+		border: 2px solid black;
+	}
+}

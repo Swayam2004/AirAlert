@@ -32,7 +32,7 @@ def get_password_hash(password):
     """Generate a password hash"""
     return pwd_context.hash(password)
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None, include_role: bool = True):
     """Create a JWT access token"""
     to_encode = data.copy()
     
@@ -42,9 +42,38 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
         expire = datetime.utcnow() + timedelta(minutes=settings.jwt_access_token_expire_minutes)
         
     to_encode.update({"exp": expire})
+    
+    # Add additional claims if needed
+    if include_role and "role" not in to_encode and "sub" in to_encode:
+        from sqlalchemy import select
+        from sqlalchemy.orm import Session
+        from ..models.database import SessionLocal
+        from ..models.users import User
+        
+        # Fetch user's role
+        with SessionLocal() as db:
+            result = db.execute(select(User.role).where(User.username == to_encode["sub"]))
+            role = result.scalar_one_or_none()
+            if role:
+                to_encode.update({"role": role})
+    
     encoded_jwt = jwt.encode(
         to_encode, 
         settings.jwt_secret_key, 
+        algorithm=settings.jwt_algorithm
+    )
+    return encoded_jwt
+
+
+def create_refresh_token(data: dict):
+    """Create a JWT refresh token with longer expiration"""
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(days=settings.jwt_refresh_token_expire_days)
+    to_encode.update({"exp": expire})
+    
+    encoded_jwt = jwt.encode(
+        to_encode, 
+        settings.jwt_refresh_secret_key, 
         algorithm=settings.jwt_algorithm
     )
     return encoded_jwt
@@ -72,20 +101,75 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         raise credentials_exception
         
     # Query the database for the user
-    from sqlalchemy import select
+    from sqlalchemy import select, update
     result = await db.execute(select(User).where(User.username == username))
     user = result.scalar_one_or_none()
     
     if user is None:
         raise credentials_exception
-        
+    
+    # Check if account is locked
+    if user.lock_until and user.lock_until > datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Account locked. Try again after {user.lock_until}",
+        )
+    
+    # Update last_token_refresh
+    await db.execute(
+        update(User)
+        .where(User.id == user.id)
+        .values(last_token_refresh=datetime.utcnow())
+    )
+    await db.commit()
+    
     return user
 
 async def get_active_user(current_user: User = Depends(get_current_user)):
     """Check if the current user is active"""
     if not current_user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
     return current_user
+
+
+async def admin_required(current_user: User = Depends(get_current_user)):
+    """Check if the current user is an admin or superuser"""
+    if current_user.role not in ["admin", "superuser"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions"
+        )
+    return current_user
+
+
+async def superuser_required(current_user: User = Depends(get_current_user)):
+    """Check if the current user is a superuser"""
+    if current_user.role != "superuser":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Superuser privileges required"
+        )
+    return current_user
+
+
+def require_auth(func):
+    """Decorator to require authentication for a route"""
+    return Depends(get_current_user)(func)
+
+
+def require_active_user(func):
+    """Decorator to require an active user for a route"""
+    return Depends(get_active_user)(func)
+
+
+def require_admin(func):
+    """Decorator to require admin privileges for a route"""
+    return Depends(admin_required)(func)
+
+
+def require_superuser(func):
+    """Decorator to require superuser privileges for a route"""
+    return Depends(superuser_required)(func)
 
 def parse_date_flexible(date_str: str) -> datetime:
     """

@@ -4,8 +4,11 @@ Orchestrates notifications across multiple delivery channels.
 """
 import logging
 import asyncio
+import smtplib
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Set
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, and_
@@ -14,7 +17,54 @@ from pydantic import BaseModel, Field
 from .base import NotificationSender, SMSNotificationSender, WebNotificationSender, EmailNotificationSender
 from ..models.alerts import Alert, Notification
 from ..models.users import User
-from .email import EmailSender, send_email
+from .email import EmailSender
+from ..api.config import settings
+
+async def send_email(recipient: str, subject: str, html_content: str) -> bool:
+    """
+    Simple function to send an email using SMTP.
+    
+    Args:
+        recipient: Email address to send to
+        subject: Email subject
+        html_content: HTML content of the email
+        
+    Returns:
+        bool: True if sent successfully, False otherwise
+    """
+    try:
+        # Create message
+        message = MIMEMultipart('alternative')
+        message['Subject'] = subject
+        message['From'] = settings.email_from or "noreply@airalert.com"
+        message['To'] = recipient
+        
+        # Attach HTML content
+        html_part = MIMEText(html_content, 'html')
+        message.attach(html_part)
+        
+        # Connect to SMTP server and send
+        smtp_host = settings.email_host or "smtp.gmail.com"
+        smtp_port = settings.email_port or 587
+        
+        # Check if we have SMTP credentials configured
+        if not settings.email_username or not settings.email_password:
+            # For development, just log the email
+            logging.info(f"Would send email to {recipient}: {subject}")
+            logging.info(f"Content: {html_content}")
+            return True
+        
+        # Send the email
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.starttls()
+            server.login(settings.email_username, settings.email_password)
+            server.send_message(message)
+        
+        return True
+        
+    except Exception as e:
+        logging.error(f"Error sending email: {e}")
+        return False
 from .web_push import send_web_push
 from backend.models.database import get_db
 from sqlalchemy.orm import Session
@@ -32,22 +82,83 @@ class NotificationManager:
     Handles routing, batching, and retry logic.
     """
     
-    def __init__(self, db_session: AsyncSession, config: Dict[str, Any]):
+    def __init__(self, db_session: Optional[AsyncSession] = None, config: Optional[Dict[str, Any]] = None):
         """
         Initialize notification manager.
         
         Args:
-            db_session: Database session
-            config: Configuration dictionary
+            db_session: Database session (optional)
+            config: Configuration dictionary (optional)
         """
         self.db_session = db_session
-        self.config = config
+        self.config = config or {}
         self.logger = logging.getLogger("NotificationManager")
         
-        # Initialize delivery channels
-        self.sms_sender = SMSNotificationSender(config)
-        self.web_sender = WebNotificationSender(config)
-        self.email_sender = EmailSender(config, db_session)
+        # Initialize delivery channels if db_session is provided
+        if db_session and config:
+            self.sms_sender = SMSNotificationSender(config)
+            self.web_sender = WebNotificationSender(config)
+            self.email_sender = EmailSender(config, db_session)
+            
+    async def send_email_notification(
+        self,
+        recipient_email: str,
+        subject: str,
+        html_content: str,
+        user_id: Optional[int] = None,
+        db_session: Optional[AsyncSession] = None
+    ) -> bool:
+        """
+        Send an email notification and record it in the database.
+        
+        Args:
+            recipient_email: Email address to send to
+            subject: Email subject
+            html_content: HTML content of the email
+            user_id: User ID to associate with notification (optional)
+            db_session: Database session (optional) - if not provided, uses the instance's session
+            
+        Returns:
+            bool: True if sent successfully, False otherwise
+        """
+        try:
+            # Use provided session or instance session
+            session = db_session or self.db_session
+            
+            # If we don't have a session, just try to send directly
+            if not session:
+                result = await send_email(recipient_email, subject, html_content)
+                return result
+            
+            # Create notification record
+            notification = Notification(
+                user_id=user_id,
+                channel="email",
+                recipient=recipient_email,
+                subject=subject,
+                content=html_content,
+                status="pending",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            
+            # Add to database
+            session.add(notification)
+            await session.commit()
+            await session.refresh(notification)
+            
+            # Send email
+            result = await send_email(recipient_email, subject, html_content)
+            
+            # Update status based on result
+            notification.status = "sent" if result else "failed"
+            notification.sent_at = datetime.utcnow() if result else None
+            await session.commit()
+            
+            return result
+        except Exception as e:
+            self.logger.error(f"Error sending email notification: {e}")
+            return False
         
         # Notification preferences cache (user_id -> preferences)
         self._preferences_cache = {}

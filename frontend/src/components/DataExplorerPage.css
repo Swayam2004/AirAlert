@@ -73,7 +73,7 @@
 
 .filters {
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
 	gap: var(--space-4);
 }
 
@@ -134,7 +134,7 @@
 	transition: var(--transition, all 0.3s ease);
 	font-size: 1rem;
 	font-weight: 500;
-	width: 100%;
+	/* width: 50%;/ */
 	margin-top: 1rem;
 }
 

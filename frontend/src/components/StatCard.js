@@ -1,8 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+	faChartLine,
+	faArrowUp,
+	faArrowDown,
+	faBroadcastTower,
+	faInfoCircle, // Default fallback icon
+} from "@fortawesome/free-solid-svg-icons";
 import "../styles/index.css";
 
-function StatCard({ title, value, unit, description, icon, trend, trendValue, link }) {
+function StatCard({ title, value, unit, description, icon, trend, trendValue, link, color = "#3498db" }) {
 	const getTrendClass = () => {
 		if (!trend) return "";
 		return trend === "up" ? "trend-up" : trend === "down" ? "trend-down" : "trend-neutral";
@@ -11,7 +19,16 @@ function StatCard({ title, value, unit, description, icon, trend, trendValue, li
 	const renderContent = () => (
 		<>
 			<div className="stat-header">
-				{icon && <span className="stat-icon">{icon}</span>}
+				{icon && (
+					<span className="stat-icon">
+						<FontAwesomeIcon
+							icon={
+								icon === "chart-line" ? faChartLine : icon === "arrow-up" ? faArrowUp : icon === "arrow-down" ? faArrowDown : icon === "broadcast-tower" ? faBroadcastTower : faInfoCircle // default fallback icon
+							}
+							color={color}
+						/>
+					</span>
+				)}
 				<h3 className="stat-title">{title}</h3>
 			</div>
 			<div className="stat-value">

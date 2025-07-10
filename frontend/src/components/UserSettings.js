@@ -1,133 +1,86 @@
-import React, { useState, useEffect } from "react";
-import API from "../services/api";
-import AuthService from "../services/auth";
-import "../styles/index.css";
+import React, { useState } from "react";
+import ProfileSettings from "./UserSettings/ProfileSettings";
+import AppearanceSettings from "./UserSettings/AppearanceSettings";
+import SecuritySettings from "./UserSettings/SecuritySettings";
+import LocationSettings from "./UserSettings/LocationSettings";
+import NotificationPreferences from "./NotificationPreferences";
+import { useAuth } from "../context/AuthContext";
+import "./UserSettings.css";
 
-function UserSettings() {
-	const [user, setUser] = useState(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(null);
-	const [preferences, setPreferences] = useState({
-		notification_channels: {
-			email: false,
-			sms: false,
-			app: true,
-		},
-		language: "en",
-		sensitivity_level: 3,
-	});
+const UserSettings = ({ user, onClose }) => {
+	const { user: authUser } = useAuth();
+	const [activeTab, setActiveTab] = useState("profile");
+	const [feedback, setFeedback] = useState({ type: null, message: "" });
 
-	useEffect(() => {
-		const fetchUserData = async () => {
-			try {
-				const currentUser = AuthService.getCurrentUser();
-				if (!currentUser) {
-					setError("You must be logged in to access user settings");
-					setLoading(false);
-					return;
-				}
+	// Use the user prop if provided, otherwise use the user from AuthContext
+	const currentUser = user || authUser;
 
-				setUser(currentUser);
-
-				// Fetch user preferences
-				const preferencesResponse = await API.fetchUserPreferences(currentUser.id);
-				setPreferences(preferencesResponse.data);
-				setLoading(false);
-			} catch (err) {
-				setError(err.message || "Failed to load user settings");
-				setLoading(false);
-			}
-		};
-
-		fetchUserData();
-	}, []);
-
-	const handlePreferenceChange = (section, field, value) => {
-		setPreferences((prev) => {
-			if (section) {
-				return {
-					...prev,
-					[section]: {
-						...prev[section],
-						[field]: value,
-					},
-				};
-			} else {
-				return {
-					...prev,
-					[field]: value,
-				};
-			}
-		});
+	const handleSuccess = (message) => {
+		setFeedback({ type: "success", message });
+		// Clear feedback after 5 seconds
+		setTimeout(() => {
+			setFeedback({ type: null, message: "" });
+		}, 5000);
 	};
 
-	const handleSavePreferences = async () => {
-		try {
-			if (!user) return;
+	const handleError = (message) => {
+		setFeedback({ type: "error", message });
+		// Clear feedback after 5 seconds
+		setTimeout(() => {
+			setFeedback({ type: null, message: "" });
+		}, 5000);
+	};
 
-			await API.updateUserPreferences(user.id, preferences);
-			alert("Preferences saved successfully!");
-		} catch (err) {
-			alert("Failed to save preferences: " + (err.response?.data?.detail || err.message));
+	// Available tabs with their labels
+	const tabs = [
+		{ id: "profile", label: "Profile" },
+		{ id: "appearance", label: "Appearance" },
+		{ id: "notifications", label: "Notifications" },
+		{ id: "locations", label: "Locations" },
+		{ id: "security", label: "Security & Privacy" },
+	];
+
+	// Render the active tab content
+	const renderTabContent = () => {
+		switch (activeTab) {
+			case "profile":
+				return <ProfileSettings user={currentUser} onSuccess={handleSuccess} onError={handleError} />;
+			case "appearance":
+				return <AppearanceSettings user={currentUser} onSuccess={handleSuccess} onError={handleError} />;
+			case "notifications":
+				return <NotificationPreferences userId={currentUser.id} onClose={() => {}} />;
+			case "locations":
+				return <LocationSettings user={currentUser} onSuccess={handleSuccess} onError={handleError} />;
+			case "security":
+				return <SecuritySettings user={currentUser} onSuccess={handleSuccess} onError={handleError} />;
+			default:
+				return <div>Select a tab to view settings</div>;
 		}
 	};
 
-	if (loading) return <div className="loading">Loading user settings...</div>;
-	if (error) return <div className="error">{error}</div>;
-	if (!user) return <div className="error">User not found</div>;
-
 	return (
-		<div className="settings-container">
-			<h2>User Settings</h2>
+		<div className="user-settings">
+			{/* Feedback messages */}
+			{feedback.type && (
+				<div className={`settings-feedback ${feedback.type}`}>
+					<span className="settings-feedback-icon">{feedback.type === "success" ? "✓" : "⚠"}</span>
+					{feedback.message}
+				</div>
+			)}
 
-			<div className="settings-section">
-				<h3>Notification Preferences</h3>
-				<div className="checkbox-group">
-					<label>
-						<input type="checkbox" checked={preferences.notification_channels.email} onChange={(e) => handlePreferenceChange("notification_channels", "email", e.target.checked)} />
-						Email Notifications
-					</label>
-				</div>
-				<div className="checkbox-group">
-					<label>
-						<input type="checkbox" checked={preferences.notification_channels.sms} onChange={(e) => handlePreferenceChange("notification_channels", "sms", e.target.checked)} />
-						SMS Notifications
-					</label>
-				</div>
-				<div className="checkbox-group">
-					<label>
-						<input type="checkbox" checked={preferences.notification_channels.app} onChange={(e) => handlePreferenceChange("notification_channels", "app", e.target.checked)} />
-						In-App Notifications
-					</label>
-				</div>
+			{/* Navigation Tabs */}
+			<div className="user-settings-tabs">
+				{tabs.map((tab) => (
+					<button key={tab.id} className={`user-settings-tab ${activeTab === tab.id ? "active" : ""}`} onClick={() => setActiveTab(tab.id)}>
+						{tab.label}
+					</button>
+				))}
 			</div>
 
-			<div className="settings-section">
-				<h3>Display Preferences</h3>
-				<div className="form-group">
-					<label htmlFor="language">Language</label>
-					<select id="language" value={preferences.language} onChange={(e) => handlePreferenceChange(null, "language", e.target.value)}>
-						<option value="en">English</option>
-						<option value="es">Spanish</option>
-						<option value="fr">French</option>
-						<option value="hi">Hindi</option>
-					</select>
-				</div>
-
-				<div className="form-group">
-					<label htmlFor="sensitivity">Sensitivity Level (1-5)</label>
-					<input type="range" id="sensitivity" min="1" max="5" value={preferences.sensitivity_level} onChange={(e) => handlePreferenceChange(null, "sensitivity_level", parseInt(e.target.value))} />
-					<span>{preferences.sensitivity_level}</span>
-				</div>
-			</div>
-
-			<div className="button-row">
-				<button className="primary-button" onClick={handleSavePreferences}>
-					Save Preferences
-				</button>
-			</div>
+			{/* Tab Content */}
+			<div className="user-settings-content">{renderTabContent()}</div>
 		</div>
 	);
-}
+};
 
 export default UserSettings;

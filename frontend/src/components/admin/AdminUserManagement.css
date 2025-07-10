@@ -1,0 +1,393 @@
+/* Admin User Management Styles */
+.admin-user-management {
+	padding: 1.5rem;
+	background-color: #fff;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+	margin-bottom: 1.5rem;
+	color: #333;
+	font-size: 1.75rem;
+	font-weight: 600;
+}
+
+/* Stats Cards */
+.user-stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	margin-bottom: 2rem;
+}
+
+.stat-card {
+	background-color: #f5f6fa;
+	border-radius: 8px;
+	padding: 1.25rem;
+	flex: 1;
+	min-width: 200px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+	transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stat-value {
+	font-size: 2.5rem;
+	font-weight: 700;
+	color: #3498db;
+	margin-bottom: 0.5rem;
+}
+
+.stat-label {
+	font-size: 1rem;
+	color: #777;
+	font-weight: 500;
+}
+
+/* Roles Card */
+.roles-card {
+	flex: 2;
+}
+
+.roles-title {
+	font-size: 1.25rem;
+	font-weight: 600;
+	margin-bottom: 1rem;
+	color: #555;
+}
+
+.roles-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+.role-stat {
+	display: flex;
+	align-items: center;
+	margin-right: 1.5rem;
+}
+
+.role-indicator {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	margin-right: 8px;
+}
+
+.role-user {
+	background-color: #3498db;
+}
+
+.role-admin {
+	background-color: #2ecc71;
+}
+
+.role-superuser {
+	background-color: #e74c3c;
+}
+
+.role-name {
+	font-weight: 500;
+	margin-right: 0.5rem;
+}
+
+.role-count {
+	font-weight: 700;
+	color: #555;
+}
+
+/* Filters Container */
+.filters-container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1.5rem;
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+.search-form {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.search-input {
+	padding: 0.6rem 1rem;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	min-width: 250px;
+	font-size: 0.95rem;
+}
+
+.filter-controls {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.filter-group {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.filter-select {
+	padding: 0.6rem 0.75rem;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background-color: white;
+	min-width: 120px;
+	font-size: 0.95rem;
+}
+
+.btn {
+	padding: 0.6rem 1.25rem;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: 500;
+	transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn:active {
+	transform: translateY(1px);
+}
+
+.btn-primary {
+	background-color: #3498db;
+	color: white;
+}
+
+.btn-primary:hover {
+	background-color: #2980b9;
+}
+
+.btn-secondary {
+	background-color: #f5f6fa;
+	color: #555;
+	border: 1px solid #ddd;
+}
+
+.btn-secondary:hover {
+	background-color: #e8eaef;
+}
+
+.btn-danger {
+	background-color: #e74c3c;
+	color: white;
+}
+
+.btn-danger:hover {
+	background-color: #c0392b;
+}
+
+.btn-sm {
+	padding: 0.3rem 0.75rem;
+	font-size: 0.85rem;
+}
+
+/* Users Table */
+.users-table-container {
+	overflow-x: auto;
+	margin-bottom: 1.5rem;
+}
+
+.users-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.95rem;
+}
+
+.users-table th,
+.users-table td {
+	padding: 0.75rem 1rem;
+	text-align: left;
+	border-bottom: 1px solid #eee;
+}
+
+.users-table th {
+	background-color: #f5f6fa;
+	font-weight: 600;
+	color: #555;
+	position: sticky;
+	top: 0;
+}
+
+.users-table tr:hover {
+	background-color: #f9f9f9;
+}
+
+.inactive-user {
+	background-color: #fafafa;
+	color: #999;
+}
+
+/* Role Selector */
+.role-select {
+	padding: 0.4rem 0.6rem;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background-color: white;
+	font-size: 0.9rem;
+}
+
+.role-badge {
+	display: inline-block;
+	padding: 0.3rem 0.75rem;
+	border-radius: 20px;
+	font-size: 0.85rem;
+	font-weight: 500;
+	text-align: center;
+}
+
+.role-admin {
+	background-color: #ebf7f0;
+	color: #2ecc71;
+	border: 1px solid #d5f5e3;
+}
+
+.role-superuser {
+	background-color: #fdedeb;
+	color: #e74c3c;
+	border: 1px solid #fadbd8;
+}
+
+.role-user {
+	background-color: #eaf2fa;
+	color: #3498db;
+	border: 1px solid #d6eaf8;
+}
+
+/* Toggle Switch for Status */
+.toggle-container {
+	display: flex;
+	align-items: center;
+}
+
+.toggle-checkbox {
+	height: 0;
+	width: 0;
+	visibility: hidden;
+	position: absolute;
+}
+
+.toggle-label {
+	cursor: pointer;
+	width: 40px;
+	height: 20px;
+	background: #ccc;
+	display: block;
+	border-radius: 100px;
+	position: relative;
+	margin-right: 10px;
+}
+
+.toggle-label:after {
+	content: "";
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 16px;
+	height: 16px;
+	background: #fff;
+	border-radius: 50%;
+	transition: 0.3s;
+}
+
+.toggle-checkbox:checked + .toggle-label {
+	background: #2ecc71;
+}
+
+.toggle-checkbox:checked + .toggle-label:after {
+	left: calc(100% - 2px);
+	transform: translateX(-100%);
+}
+
+.status-text {
+	font-size: 0.9rem;
+}
+
+/* Verification Status */
+.verification-status {
+	display: inline-block;
+	padding: 0.2rem 0.5rem;
+	border-radius: 4px;
+	font-size: 0.85rem;
+}
+
+.verified {
+	background-color: #ebf7f0;
+	color: #2ecc71;
+}
+
+.unverified {
+	background-color: #fef9e7;
+	color: #f39c12;
+}
+
+/* Pagination */
+.pagination {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	margin-top: 1.5rem;
+}
+
+.pagination-button {
+	border: 1px solid #ddd;
+	background-color: white;
+	color: #555;
+	border-radius: 4px;
+	padding: 0.5rem 0.75rem;
+	cursor: pointer;
+	font-weight: 500;
+	transition: background-color 0.2s ease;
+}
+
+.pagination-button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.pagination-button:not(:disabled):hover {
+	background-color: #f5f6fa;
+}
+
+.pagination-info {
+	margin: 0 0.5rem;
+	font-size: 0.95rem;
+}
+
+.limit-select {
+	padding: 0.5rem 0.75rem;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	margin-left: 0.5rem;
+	background-color: white;
+}
+
+/* Loading and Error */
+.loading-indicator,
+.error-message {
+	padding: 2rem;
+	text-align: center;
+	background-color: #f9f9f9;
+	border-radius: 8px;
+	margin: 1rem 0;
+}
+
+.loading-indicator {
+	color: #3498db;
+}
+
+.error-message {
+	color: #e74c3c;
+}

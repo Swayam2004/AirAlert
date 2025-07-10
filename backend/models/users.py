@@ -34,8 +34,17 @@ class User(Base):
     # Authentication related
     hashed_password = Column(String)
     is_verified = Column(Boolean, default=False)  # Whether email is verified
+    verification_token = Column(String, nullable=True)  # Email verification token
+    verification_token_expires = Column(DateTime, nullable=True)  # Expiration time for verification token
+    password_reset_token = Column(String, nullable=True)  # Password reset token
+    password_reset_expires = Column(DateTime, nullable=True)  # Expiration time for reset token
+    failed_login_attempts = Column(Integer, default=0)  # Count of failed login attempts
+    lock_until = Column(DateTime, nullable=True)  # Account locked until this time
+    role = Column(String, default="user")  # Role type: 'user', 'admin', 'superuser'
     last_login = Column(DateTime)
+    last_token_refresh = Column(DateTime, nullable=True)  # When was the token last refreshed
     created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     
     # Virtual properties for location access
     @property
