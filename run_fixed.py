@@ -15,6 +15,7 @@ warnings.filterwarnings("ignore", message="Valid config keys have changed in V2.
 
 # Set up logging
 logging.basicConfig(
+
     level=logging.DEBUG,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )

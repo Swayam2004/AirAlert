@@ -14,6 +14,9 @@ import pathlib
 # Filter out specific Pydantic warning about orm_mode
 warnings.filterwarnings("ignore", message="Valid config keys have changed in V2.*'orm_mode' has been renamed.*")
 
+# Filter out specific Pydantic warning about orm_mode
+warnings.filterwarnings("ignore", message="Valid config keys have changed in V2.*'orm_mode' has been renamed.*")
+
 # Set up logging
 logging.basicConfig(
     level=logging.DEBUG,

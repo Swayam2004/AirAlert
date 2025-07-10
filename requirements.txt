@@ -6,7 +6,7 @@ pandas==2.2.2                 # Upgraded from 1.5.3 for Python 3.12 support
 scikit-learn==1.4.2           # Latest as of 2025
 scipy>=1.10.0                 # Compatible with numpy 1.26
 pyproj>=3.5.0                 # Latest stable
-gdal==3.8.4                   # Requires GDAL system package; 3.8.x works with Python 3.12
+# gdal==3.8.4                   # Requires GDAL system package; 3.8.x works with Python 3.12
 shapely>=2.0.1                # Latest with full pyproj/geopandas compatibility
 
 # Machine Learning and LLM

@@ -236,6 +236,7 @@ const PollutionHeatmap = ({
 										<br />
 										{value !== null && value !== undefined ? (
 											<>
+
 												{pollutantSettings[selectedPollutant].label}: <strong>{typeof value === "number" ? value.toFixed(2) : value.toString()}</strong>
 												<br />
 												Status: <span style={{ color }}>{getSeverityText(value)}</span>
@@ -251,6 +252,7 @@ const PollutionHeatmap = ({
 										<p>
 											Location: {station.city || "Unknown"}, {station.state || "Unknown"}
 											<br />
+
 											Coordinates: {typeof station.latitude === "number" ? station.latitude.toFixed(4) : station.latitude},{" "}
 											{typeof station.longitude === "number" ? station.longitude.toFixed(4) : station.longitude}
 										</p>
@@ -261,6 +263,7 @@ const PollutionHeatmap = ({
 													{Object.entries(pollutantSettings).map(([key, settings]) => {
 														const val = stationData[key];
 														if (val === null || val === undefined) return null;
+
 
 														// Format the value based on its type
 														let formattedValue;

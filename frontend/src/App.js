@@ -163,6 +163,28 @@ function App() {
 	const [showSettingsModal, setShowSettingsModal] = useState(false);
 	const [isHealthy, setIsHealthy] = useState(true);
 
+	useEffect(() => {
+		// Check authentication status when the app loads
+		const checkAuth = async () => {
+			try {
+				setLoading(true);
+				const userData = await AuthService.getCurrentUser();
+				if (userData) {
+					setIsAuthenticated(true);
+					setUser(userData);
+				}
+			} catch (err) {
+				console.error("Error checking authentication:", err);
+				setIsAuthenticated(false);
+				setUser(null);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		checkAuth();
+	}, []);
+
 	// Check API health on startup
 	useEffect(() => {
 		const checkHealth = async () => {

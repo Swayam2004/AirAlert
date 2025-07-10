@@ -1,7 +1,6 @@
 """
 Authentication models for the AirAlert API.
-"""
-from datetime import datetime
+"""import datetime
 from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional, List
 import re
